@@ -11,9 +11,11 @@ limb darkening) to measure planets and tell real ones from false positives.
 - [x] Limb-darkened transit model fit (batman + SciPy) with fitted period/timing
 - [x] Stellar density from Kepler's 3rd law, with error propagation
 - [x] Multi-sector fit (4 TESS sectors)
-- [ ] Full `analyze_star()` pipeline tested on a second planet
+- [x] Full `analyze_star()` pipeline, blind-tested on WASP-121 b
+- [x] Impact-parameter fit + profile-scan upper limits for near edge-on orbits
+- [ ] Clean pipeline notebook with multi-sector support
 - [ ] Vetting checks: odd/even depths, secondary eclipse, density consistency
-- [ ] Search unflagged stars; ML classifier for planet vs. false positive
+- [ ] Search stars without known planets; ML classifier for planet vs. false positive
 
 ## Results: WASP-18 b (TESS sectors 2, 3, 29, 30)
 | Parameter | Value |
@@ -24,9 +26,29 @@ limb darkening) to measure planets and tell real ones from false positives.
 | Inclination | 83.2° ± 0.2° |
 | Stellar density | 0.85 ± 0.01 g/cm³ |
 
-## Notebook
-- **[View the notebook on GitHub](exoplanet_search.ipynb)**: code, plots, and notes
-- **Run it yourself:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JulienRequa/exoplanet-search/blob/main/exoplanet_search.ipynb)
+## Blind test: WASP-121 b (TESS, 1 sector, no hints given)
+| Parameter | Value |
+|---|---|
+| Period | 1.27493 d |
+| Rp/R★ | 0.1217 ± 0.0006 |
+| a/R★ | 3.82 ± 0.04 |
+| Impact parameter | b < 0.22 (95%) → inclination > 86.7° |
+| Stellar density | 0.65 g/cm³ |
+
+Both planets agree well with published values.
+
+## Next steps
+1. Clean pipeline notebook with multi-sector support and automatic boundary flags
+2. Vetting checks for false positives (odd/even depths, secondary eclipse, density)
+3. Run on many known planets and compare to published values
+4. Search stars without known planets for new candidates
+5. Machine-learning classifier (built from scratch in NumPy) for planet vs. false positive
+
+## Notebooks
+- **[exoplanet_search.ipynb](exoplanet_search.ipynb)**: lab notebook: building and testing
+  the pipeline on WASP-18 b and WASP-121 b, including every mistake and fix
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JulienRequa/exoplanet-search/blob/main/exoplanet_search.ipynb)
+- **pipeline.ipynb**: the clean, reusable pipeline (coming next)
 
 ## Author
 Julien Requa: Phillips Academy Andover '29
