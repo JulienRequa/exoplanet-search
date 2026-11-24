@@ -65,8 +65,13 @@ def compare(old_csv, new_csv):
         for p in nums:
             d = r[p + "_new"] - r[p + "_old"]
             err = r[p + "_err_old"]
+            flagged = p in str(r["flags_old"]).split(", ") or (p == "inc" and "b" in str(r["flags_old"]))
+            if d != 0 and (flagged or not err > 0):  # at a bound: its ± is meaningless
+                if abs(d) > 1e-4:
+                    notes.append(f"{p} {r[p+'_old']:.5g}→{r[p+'_new']:.5g} (at a bound, ± unreliable)")
+                continue
             if d != 0:
-                s = abs(d) / err if err > 0 else np.inf
+                s = abs(d) / err
                 worst = max(worst, s)
                 if s > 0.1:
                     notes.append(f"{p} {r[p+'_old']:.5g}→{r[p+'_new']:.5g} ({s:.2f}σ)")

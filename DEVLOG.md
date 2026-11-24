@@ -68,3 +68,19 @@ TIC (TOI): 29336129 (2933.01), 269450900 (1127.01), 263203229 (6741.01), 5539041
 ## 2026-11-24 — Moving out of Colab
 - Cloned the GitHub repo to ~/code/exoplanet-search; working on branch `v2-vetting`.
 - Added `pipeline.py` (Colab export of pipeline.ipynb + the v1 FP-test cells) and CLAUDE.md.
+
+## 2026-11-24 — Environment, baseline, bug fixes, regression
+- conda env `exoplanet` (environment.yml; exact versions in environment.lock.yml).
+- pipeline.py made importable (no function changed). `regression.py run/compare` added.
+- Local baseline (pre-fix code): 14/14 PLANET CANDIDATE, all periods match; WASP-18 and
+  WASP-121 match Colab within 0.25σ. pi Men density PASS (σρ/ρ = 41%) vs WEAK in Colab.
+- Bug fixes committed separately: (1) Rp/Rs cap 1.0 + guess clipping, also in profile_b;
+  (2) TIC fallback for missing/NaN Teff, log g, radius (`star_source` recorded);
+  (3) `period_hint` → `search_near` (±2% of 1×/½×/2×, highest BLS power, `period_choice`).
+- Regression after fixes: 13/13 recovered, every period matches; 12 planets 5/5, pi Men 4/4
+  with density WEAK — identical to the Colab regression. Largest change in any fitted value
+  that is not at a bound: 0.015σ. WASP-18 (4 sectors) unchanged.
+- Note for the paper: pi Men's fit has b, u1, u2 at bounds, so its covariance is nearly
+  singular. Best-fit values don't move, but the a/Rs error swings (±2.2 → ±6.3) with
+  microscopic changes in where the fit lands; its density WEAK/PASS status is fragile.
+  Bug fix 1's side effect also flags pi Men's Rp/Rs (0.0166, within 0.0099 of the 0.01 floor).
