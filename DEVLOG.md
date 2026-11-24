@@ -97,3 +97,8 @@ TIC (TOI): 29336129 (2933.01), 269450900 (1127.01), 263203229 (6741.01), 5539041
 - Pulled final Colab pipeline.ipynb (commit 3ed189d): only adds the FP-test v1 cells, no
   function changes. Its saved outputs record the v1 TOI table: 8175 TOIs, 627 FPs passing
   the cuts. fp_test_v1() in pipeline.py now also merges in the Comments, as the notebook does.
+- WD 1856+534 b (white-dwarf host, P = 1.4079 d, hint → 1×): Rp/Rs hit the 1.0 cap; TIC has
+  no Teff/log g/radius (all NaN) → size and density N/A; verdict PLANET CANDIDATE (some checks
+  weak). Note: fit gave u1 = u2 = 1.0 (u1 + u2 = 2, physically impossible limb darkening →
+  model depth 103.9%); current LD bounds allow it — for Julien to decide.
+- Centroid-check design written: docs/centroid_check_design.md (awaiting approval).
