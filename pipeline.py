@@ -201,10 +201,80 @@ def plot_fit(t, f, popt):
     ax2.set_xlabel("Days from transit center"); ax2.set_ylabel("Data − model")
     plt.show()
 
+LD_TABLE_GLOB = "data/claret2017_tess_quadratic_*.csv"   # dated snapshot(s); newest is used
+LD_PRIOR_SIGMA = 0.1
+_ld_interp = None
+
+def ld_prior_for(star_info, sigma=LD_PRIOR_SIGMA):
+    """Gaussian limb-darkening prior (u1, u2, σ) from the Claret (2017) TESS quadratic table,
+    interpolated linearly in (Teff, log g). Returns (prior, source): prior is None (free
+    q1, q2) if there's no table, Teff/log g are missing, or the star is outside the table.
+    """
+    global _ld_interp
+    import glob, os
+    from scipy.interpolate import LinearNDInterpolator
+    teff, logg = star_info.get("TEFF"), star_info.get("LOGG")
+    if teff is None or logg is None:
+        return None, "free (no Teff/log g)"
+    if _ld_interp is None:
+        here = os.path.dirname(os.path.abspath(__file__))
+        files = sorted(glob.glob(os.path.join(here, LD_TABLE_GLOB)))
+        if not files:
+            return None, "free (no LD table)"
+        tab = pd.read_csv(files[-1])
+        _ld_interp = (LinearNDInterpolator(tab[["Teff", "logg"]].values, tab[["u1", "u2"]].values),
+                      os.path.basename(files[-1]))
+    interp, name = _ld_interp
+    u1, u2 = interp(teff, logg)[0]
+    if not (np.isfinite(u1) and np.isfinite(u2)):
+        return None, "free (outside LD table)"
+    return (float(u1), float(u2), sigma), f"prior {u1:.3f}, {u2:.3f} ± {sigma} ({name})"
+
+def q_to_u(q1, q2):
+    """Kipping (2013): q1, q2 in [0, 1] ↔ every physical quadratic limb-darkening law."""
+    sq = np.sqrt(q1)
+    return 2 * sq * q2, sq * (1 - 2 * q2)
+
+def u_to_q(u1, u2):
+    """Inverse of q_to_u (clipped into [0, 1], for starting guesses)."""
+    tot = u1 + u2
+    q1 = np.clip(tot**2, 0, 1)
+    q2 = np.clip(u1 / (2 * tot), 0, 1) if tot > 0 else 0.5
+    return q1, q2
+
+def _u_jacobian(q1, q2):
+    """d(u1, u2)/d(q1, q2), for carrying error bars from q to u."""
+    sq = np.sqrt(max(q1, 1e-12))
+    return np.array([[q2 / sq,             2 * sq],
+                     [(1 - 2 * q2) / (2 * sq), -2 * sq]])
+
+def _noise(f):
+    """Per-point flux scatter from point-to-point differences (ignores slow trends/transits)."""
+    return 1.4826 * np.median(np.abs(np.diff(f))) / np.sqrt(2)
+
+def _ld_fit(model_x, t, f, guess, bounds, ld_prior, sigma_f):
+    """curve_fit on parameters x = [..., q1, q2] (q1, q2 last). A Gaussian prior on (u1, u2)
+    is added as two extra 'data points': the fit pays ((u − u_table)/σ)² for straying.
+    """
+    n = len(t)
+    if ld_prior is None:
+        y, sig = f, np.full(n, sigma_f)
+        func = lambda _, *x: model_x(t, *x)
+    else:
+        u1c, u2c, sp = ld_prior
+        y = np.r_[f, u1c, u2c]
+        sig = np.r_[np.full(n, sigma_f), sp, sp]
+        func = lambda _, *x: np.r_[model_x(t, *x), q_to_u(x[-2], x[-1])]
+    popt, pcov = curve_fit(func, np.arange(len(y)), y, p0=guess, bounds=bounds, sigma=sig)
+    chi2 = np.sum(((y - func(None, *popt)) / sig) ** 2)
+    return popt, pcov, chi2
+
 def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
-                plot=False, verbose=False, return_pcov=False):
+                plot=False, verbose=False, return_pcov=False, ld_prior=None):
     """Fit the transit model. `start` = a previous best fit; `start_errs` = its uncertainties
-    (sets how far timing may move). Returns: popt, errs, inc, inc_err, flags
+    (sets how far timing may move). Limb darkening is fitted as Kipping q1, q2 ∈ [0, 1]
+    (only physical profiles); ld_prior = (u1, u2, σ) adds a Gaussian prior, None = free.
+    Returns: popt, errs, inc, inc_err, flags  (popt/errs in terms of u1, u2)
     (+ the covariance matrix pcov if return_pcov=True)
     """
     P0, T00, D = plain(period), plain(t0), plain(duration)
@@ -217,23 +287,33 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
     t, f = t[near], f[near]
 
     if start is None:                                         # guesses from physics
+        u_guess = ld_prior[:2] if ld_prior is not None else (0.3, 0.2)
         guess = [T00, P0, np.sqrt(max(plain(depth), 1e-5)),   # depth ≈ (Rp/Rs)²
-                 4.2 * P0 ** (2 / 3), 0.3, 0.3, 0.2]          # Kepler, Sun-like star
+                 4.2 * P0 ** (2 / 3), 0.3, *u_to_q(*u_guess)] # Kepler, Sun-like star
         dt, dP = 0.02, 0.002
     else:                                                     # refine: window = 5× previous error
-        guess = list(start)
+        guess = list(start[:5]) + list(u_to_q(start[5], start[6]))
         dt = max(0.01, 5 * start_errs[0]) if start_errs is not None else 0.01
         dP = max(0.0001, 5 * start_errs[1]) if start_errs is not None else 0.0001
     # Rp/Rs may reach 1.0: eclipsing binaries can be star-sized (bug fix, 2026-11-24)
-    bounds = ([guess[0] - dt, guess[1] - dP, 0.01, 1.5,   0.0, 0.0, -0.5],
-              [guess[0] + dt, guess[1] + dP, 1.00, 100.0, 1.2, 1.0,  1.0])
+    # Limb darkening as q1, q2 ∈ [0, 1] (Kipping 2013), 2026-11-24
+    bounds = ([guess[0] - dt, guess[1] - dP, 0.01, 1.5,   0.0, 0.0, 0.0],
+              [guess[0] + dt, guess[1] + dP, 1.00, 100.0, 1.2, 1.0, 1.0])
 
     # Keep every starting guess inside its bounds (a very deep eclipse used to give a
     # guess Rp/Rs = sqrt(depth) above the cap → curve_fit crashed). Guesses already inside
     # are unchanged.
     guess = np.clip(guess, bounds[0], bounds[1])
 
-    popt, pcov = curve_fit(transit_model, t, f, p0=guess, bounds=bounds)
+    model_x = lambda tt, t0_, per, rp, a, b, q1, q2: transit_model(tt, t0_, per, rp, a, b,
+                                                                   *q_to_u(q1, q2))
+    x, pcov_x, _ = _ld_fit(model_x, t, f, guess, bounds, ld_prior, _noise(f))
+
+    # Back to u1, u2 (what transit_model and the vetting checks use), errors via Jacobian
+    J = np.eye(7)
+    J[5:, 5:] = _u_jacobian(x[5], x[6])
+    popt = np.r_[x[:5], q_to_u(x[5], x[6])]
+    pcov = J @ pcov_x @ J.T
     errs = np.sqrt(np.diag(pcov))
 
     # Inclination from b and a/Rs, with error propagation (partial derivatives)
@@ -245,7 +325,9 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
 
     # Flag parameters at a bound, or whose error bar reaches past one
     flags = []
-    for name, val, err, lo, hi in zip(PARAM_NAMES, popt, errs, bounds[0], bounds[1]):
+    x_errs = np.sqrt(np.diag(pcov_x))
+    for name, val, err, lo, hi in zip(PARAM_NAMES[:5] + ["q1", "q2"], x, x_errs,
+                                      bounds[0], bounds[1]):
         width = hi - lo
         if val - lo < max(0.01 * width, err) or hi - val < max(0.01 * width, err):
             flags.append(name)
@@ -264,9 +346,10 @@ When b is stuck near 0 (nearly edge-on), its ± is meaningless. profile_b fixes 
 refits everything else, and finds where χ² worsens by 4 → 95% upper limit on b.
 """
 
-def profile_b(lc, popt, b_max=1.0, n=21, plot=False):
+def profile_b(lc, popt, b_max=1.0, n=21, plot=False, ld_prior=None):
     """95% upper limit on b by profile scan. Returns (b_upper, inc_lower),
     or (None, None) if the data can't limit b within the scanned range.
+    Limb darkening as in fit_transit (q1, q2; optional prior, included in χ²).
     """
     t = np.asarray(lc.time.value, dtype=float)
     f = np.asarray(lc.flux.value, dtype=float)
@@ -278,13 +361,14 @@ def profile_b(lc, popt, b_max=1.0, n=21, plot=False):
     b_grid = np.linspace(0, b_max, n)
     chi2 = []
     for bb in b_grid:
-        def model_fixed_b(t, t0, per, rp, a, u1, u2):        # b locked at bb
-            return transit_model(t, t0, per, rp, a, bb, u1, u2)
-        start = [popt[0], popt[1], popt[2], popt[3], popt[5], popt[6]]
-        lo = [popt[0] - 0.01, popt[1] - 0.0001, 0.01, 1.5,   0.0, -0.5]
-        hi = [popt[0] + 0.01, popt[1] + 0.0001, 1.00, 100.0, 1.0,  1.0]   # Rp/Rs cap = fit_transit's
-        pf, _ = curve_fit(model_fixed_b, t, f, p0=start, bounds=(lo, hi))
-        chi2.append(np.sum((f - model_fixed_b(t, *pf))**2) / sigma**2)
+        def model_fixed_b(t, t0, per, rp, a, q1, q2):        # b locked at bb
+            return transit_model(t, t0, per, rp, a, bb, *q_to_u(q1, q2))
+        start = [popt[0], popt[1], popt[2], popt[3], *u_to_q(popt[5], popt[6])]
+        lo = [popt[0] - 0.01, popt[1] - 0.0001, 0.01, 1.5,   0.0, 0.0]
+        hi = [popt[0] + 0.01, popt[1] + 0.0001, 1.00, 100.0, 1.0, 1.0]    # Rp/Rs cap = fit_transit's
+        start = np.clip(start, lo, hi)
+        _, _, c2 = _ld_fit(model_fixed_b, t, f, start, (lo, hi), ld_prior, sigma)
+        chi2.append(c2)
 
     dchi2 = np.array(chi2) - min(chi2)
     above = np.where(dchi2 >= 4)[0]                          # first grid point past Δχ² = 4
@@ -521,6 +605,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     """
     lcs = download(star_name, n_sectors)
     star_info, star_source = get_star_info(lcs[0])
+    ld_prior, ld_source = ld_prior_for(star_info)
 
     # Search and first fit on ONE sector
     period_choice = None
@@ -531,7 +616,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     c1 = clean(lcs[0], period=period, t0=t0, duration=duration)
     popt, errs, inc, inc_err, flags, pcov = fit_transit(c1, period, t0, duration, depth,
                                                         plot=plot and len(lcs) == 1,
-                                                        return_pcov=True)
+                                                        return_pcov=True, ld_prior=ld_prior)
     cleaned = c1
 
     # Refine with all sectors, timing window set by the 1-sector uncertainties
@@ -539,12 +624,14 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
         cleaned = clean_all(lcs, period=popt[1], t0=popt[0], duration=duration)
         popt, errs, inc, inc_err, flags, pcov = fit_transit(cleaned, period, t0, duration, depth,
                                                             start=popt, start_errs=errs,
-                                                            plot=plot, return_pcov=True)
+                                                            plot=plot, return_pcov=True,
+                                                            ld_prior=ld_prior)
 
     rho = 3 * np.pi / (G * (popt[1] * 86400)**2) * popt[3]**3 / 1000
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
                "lc": cleaned, "star_info": star_info, "period_choice": period_choice,
+               "ld_source": ld_source,
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
@@ -552,7 +639,8 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
 
     # Automatic upper limit when b is stuck near 0 (nearly edge-on)
     if "b" in flags and popt[4] < 0.5:
-        results["b_upper"], results["inc_lower"] = profile_b(cleaned, popt, plot=plot)
+        results["b_upper"], results["inc_lower"] = profile_b(cleaned, popt, plot=plot,
+                                                             ld_prior=ld_prior)
 
     if verbose:
         print(f"\n{'━' * 50}\n=== {star_name} ({len(lcs)} sector(s)) ===")

@@ -63,3 +63,21 @@ def test_grazing_transit_flagged():
     r = fit(fake_lc([1.3, 3.0, 0.15, 9.0, 1.02, 0.4, 0.2], 2e-4, seed=2))
     g, g_err, sigma = pl.grazing_check(r)
     assert sigma > 3
+
+
+def test_limb_darkening_always_physical():      # Kipping q1, q2: u1 + u2 ≤ 1, u1 ≥ 0, u1 + 2u2 ≥ 0
+    r = fit(fake_lc([1.3, 3.0, 0.5, 9.0, 0.2, 0.4, 0.2], 1e-3))
+    u1, u2 = r["u1"][0], r["u2"][0]
+    assert u1 >= -1e-9 and u1 + u2 <= 1 + 1e-9 and u1 + 2 * u2 >= -1e-9
+
+
+def test_q_u_roundtrip():
+    for u1, u2 in [(0.4, 0.2), (0.1, 0.5), (0.9, 0.05)]:
+        assert np.allclose(pl.q_to_u(*pl.u_to_q(u1, u2)), (u1, u2))
+
+
+def test_ld_prior_pulls_fit():
+    lc = fake_lc([1.3, 3.0, 0.1, 9.0, 0.3, 0.4, 0.2], 3e-3)
+    P, T0, D, dep = pl.search(lc)
+    popt, *_ = pl.fit_transit(lc, P, T0, D, dep, ld_prior=(0.6, 0.1, 0.02))
+    assert abs(popt[5] - 0.6) < 0.06 and abs(popt[6] - 0.1) < 0.06

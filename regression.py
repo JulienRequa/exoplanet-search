@@ -32,7 +32,7 @@ def row_for(star, n_sectors, P_pub):
     row["b_upper"] = r.get("b_upper", "")
     row["inc_lower"] = r.get("inc_lower", "")
     row["P match"] = pl.period_match(r["period"][0], P_pub)
-    for k in ("star_source", "period_choice"):          # added by later versions
+    for k in ("star_source", "period_choice", "ld_source"):          # added by later versions
         if k in r:
             row[k] = r[k]
     v = r["vetting"]
