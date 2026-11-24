@@ -102,3 +102,24 @@ TIC (TOI): 29336129 (2933.01), 269450900 (1127.01), 263203229 (6741.01), 5539041
   weak). Note: fit gave u1 = u2 = 1.0 (u1 + u2 = 2, physically impossible limb darkening →
   model depth 103.9%); current LD bounds allow it — for Julien to decide.
 - Centroid-check design written: docs/centroid_check_design.md (awaiting approval).
+
+## 2026-11-24 — Limb darkening (q1/q2 + priors) and centroid check
+- Decisions (Julien): Kipping q1, q2 + Claret Gaussian priors (σ = 0.1); size lower-limit
+  rule approved; centroid check approved (FAIL if shift > 3σ AND source > 1 px).
+- Implemented q1/q2 in fit_transit and profile_b. Priors enter curve_fit as two extra
+  residuals (u − u_table)/σ, flux points weighted by their scatter; profile_b's χ² includes
+  them. Claret (2017) TESS table NOT yet downloaded: CDS (VizieR/FTP/TAP) was down all
+  session → every star currently runs with free q1, q2 (`ld_source` = "free (no LD table)").
+- Regression (q1/q2, no prior): 13/13, largest change 0.9σ (WASP-33: old fit had
+  unphysical u2 = −0.33). pi Men: a/Rs error 6.3 → 2.5, density WEAK → PASS; still at an LD
+  corner (u1 = 0, u2 = 0.99) — needs the prior to judge whether it stabilizes.
+- Grazing simulations (b + k = 1.17; 2 noise levels × 3 seeds):
+  covariance σ (approved rule): free 0/6, prior 0/6 (best +2.5σ).
+  Profile-likelihood σ (refit with b + k ≤ 1, σ = √Δχ²; prototype, NOT in pipeline):
+  free 2/6, prior 4/6 (all three at 200 ppm, 5–7σ), table off by 0.1: same 4/6.
+  No false alarms in any setup (b = 0.3). → proposal for Julien.
+- Centroid check built as approved (light-curve centroid columns, null from 200 fake
+  transits, source offset vs the target's WCS position). WCS-vs-centroid systematic ≈ 0.3–0.4 px.
+  Dev FPs with neighbour Comments: shifts 2.8σ, 1.5σ, 3.2σ, 7.8σ, but the named neighbours
+  are at 0.60, 0.47, 1.22, ~0.5–0.6 px → 3 of 4 are inside the 1 px limit by construction;
+  the 1.22 px one is measured at 0.53 px (aperture truncation biases moment centroids low).
