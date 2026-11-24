@@ -1,21 +1,28 @@
 # Exoplanet Search with TESS
 
-Learning Python by searching NASA TESS data for transiting exoplanets,
-and using physics (orbital mechanics, transit geometry) to tell real
-planets from false positives.
+Learning Python by building a pipeline that searches NASA TESS data for
+transiting exoplanets, using physics (orbital mechanics, transit geometry,
+limb darkening) to measure planets and tell real ones from false positives.
 
 ## Status (in progress)
-- [x] Download and plot TESS light curves with `lightkurve`
-- [x] Recover the known hot Jupiter WASP-18 b and fold its transit
-- [ ] Estimate planet size from transit depth: δ ≈ (Rp/Rs)²
-- [ ] Orbital distance from Kepler's third law
-- [ ] Own period search (box least squares) and transit model
-- [ ] Vet unconfirmed TESS candidates
+- [x] Download, clean, and fold TESS light curves with `lightkurve`
+- [x] Period search with Box Least Squares (recovers WASP-18 b with no input)
+- [x] Mask transits during detrending; trim spacecraft "ramp" after data gaps
+- [x] Limb-darkened transit model fit (batman + SciPy) with fitted period/timing
+- [x] Stellar density from Kepler's 3rd law, with error propagation
+- [x] Multi-sector fit (4 TESS sectors)
+- [ ] Full `analyze_star()` pipeline tested on a second planet
+- [ ] Vetting checks: odd/even depths, secondary eclipse, density consistency
+- [ ] Search unflagged stars; ML classifier for planet vs. false positive
 
-## First result: WASP-18 b (TESS Sector 2)
-- Period ≈ 0.94 days
-- Transit depth ≈ 1.05% → planet radius ≈ 0.10 × star radius
-- Duration ≈ 2 hours; rounded bottom from limb darkening
+## Results: WASP-18 b (TESS sectors 2, 3, 29, 30)
+| Parameter | Value |
+|---|---|
+| Period | 0.94145 d |
+| Rp/R★ | 0.0991 ± 0.0002 |
+| a/R★ | 3.421 ± 0.017 |
+| Inclination | 83.2° ± 0.2° |
+| Stellar density | 0.85 ± 0.01 g/cm³ |
 
 ## Notebook
 - **[View the notebook on GitHub](exoplanet_search.ipynb)**: code, plots, and notes
