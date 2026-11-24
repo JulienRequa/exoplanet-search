@@ -1,0 +1,14 @@
+name: exoplanet
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - astropy
+  - astroquery
+  - lightkurve
+  - batman-package
+  - pytest

@@ -21,20 +21,17 @@ Development history: lab_notebook.ipynb
 (Install output hidden with %%capture; harmless dependency warnings from Colab's preinstalled packages.)
 """
 
-# Commented out IPython magic to ensure Python compatibility.
-# %%capture
-# !pip install lightkurve batman-package -q
-# 
-# import io, contextlib
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import lightkurve as lk
-# import batman
-# from scipy.optimize import curve_fit
-# 
-# G = 6.674e-11            # gravitational constant (SI)
-# R_JUP = 0.10045          # Jupiter radius in solar radii
-# PARAM_NAMES = ["t0", "period", "Rp/Rs", "a/Rs", "b", "u1", "u2"]
+import io, contextlib, time
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import lightkurve as lk
+import batman
+from scipy.optimize import curve_fit
+
+G = 6.674e-11            # gravitational constant (SI)
+R_JUP = 0.10045          # Jupiter radius in solar radii
+PARAM_NAMES = ["t0", "period", "Rp/Rs", "a/Rs", "b", "u1", "u2"]
 
 """## 1. Download
 Up to n_sectors of TESS 2-minute SPOC light curves. Always returns a list (one per sector).
@@ -474,8 +471,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False):
 # 9. Example
 """
 
-w18 = analyze_star("WASP-18", n_sectors=4, plot=True, vet=True)
-w121 = analyze_star("WASP-121", n_sectors=2, vet=True)
+# See main() at the bottom: python pipeline.py runs WASP-18 (4 sectors) and WASP-121 (2).
 
 """---
 # 10. Batch run
@@ -483,9 +479,6 @@ Run the pipeline on a list of known planets and collect one summary row per star
 Published periods (approximate) are a quick sanity check: does the search recover the
 right period, or a harmonic (½× or 2×)?
 """
-
-import pandas as pd
-import time
 
 # Known transiting planets: star name → approximate published period (days)
 TARGETS = {
@@ -526,8 +519,6 @@ def batch_run(targets, n_sectors=2):
             print(f"✗ {star}: {type(e).__name__}: {str(e)[:80]}")
     return pd.DataFrame(rows), all_results
 
-summary, all_results = batch_run(TARGETS)
-summary
 
 """---
 # Vetting rules (frozen 2026-11-24, before false-positive test)
@@ -547,23 +538,23 @@ Run the frozen pipeline on TESS candidates that follow-up observations ruled out
 (false positives / eclipsing binaries). Goal: what fraction does vetting catch?
 """
 
-toi = pd.read_csv("https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv")
-print(len(toi), "TOIs")
-print(list(toi.columns))
+TOI_URL = "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 
-print(toi["TFOPWG Disposition"].value_counts(dropna=False))
-
-fp = toi[(toi["TFOPWG Disposition"] == "FP")
-         & toi["Period (days)"].between(0.5, 10)       # periods our search covers
-         & (toi["Depth (ppm)"] > 2000)]                # deep, like the planets we tested
-print(len(fp), "matching false positives")
-
-sample = fp.sample(20, random_state=1)                 # random, but repeatable
-FP_TARGETS = {f"TIC {int(r['TIC ID'])}": r["Period (days)"] for _, r in sample.iterrows()}
-sample[["TOI", "TIC ID", "Period (days)", "Depth (ppm)", "Comments"]]
-
-fp_summary, fp_results = batch_run(FP_TARGETS)
-fp_summary
+def fp_test_v1():
+    """The v1 false-positive test exactly as run in Colab (live TOI table, random_state=1).
+    Kept for the record; the live table changes, so this may not reproduce the v1 sample.
+    """
+    toi = pd.read_csv(TOI_URL)
+    print(len(toi), "TOIs")
+    print(toi["TFOPWG Disposition"].value_counts(dropna=False))
+    fp = toi[(toi["TFOPWG Disposition"] == "FP")
+             & toi["Period (days)"].between(0.5, 10)       # periods our search covers
+             & (toi["Depth (ppm)"] > 2000)]                # deep, like the planets we tested
+    print(len(fp), "matching false positives")
+    sample = fp.sample(20, random_state=1)                 # random, but repeatable
+    FP_TARGETS = {f"TIC {int(r['TIC ID'])}": r["Period (days)"] for _, r in sample.iterrows()}
+    print(sample[["TOI", "TIC ID", "Period (days)", "Depth (ppm)", "Comments"]])
+    return batch_run(FP_TARGETS)
 
 """---
 # Development notes
@@ -588,3 +579,13 @@ fp_summary
 - [ ] ML classifier (from scratch in NumPy): planet vs false positive
 - [ ] Independent vetting of open TOI planet candidates (PC) → paper section
 """
+
+
+def main():
+    """Examples from the notebook: WASP-18 (4 sectors) and WASP-121 (2 sectors), vetted."""
+    analyze_star("WASP-18", n_sectors=4, vet=True)
+    analyze_star("WASP-121", n_sectors=2, vet=True)
+
+
+if __name__ == "__main__":
+    main()
