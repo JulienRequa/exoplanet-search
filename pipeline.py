@@ -145,6 +145,30 @@ def search(lc, min_period=0.5, max_period=10, n_periods=10000, plot=False):
     return (pg.period_at_max_power, pg.transit_time_at_max_power,
             pg.duration_at_max_power, pg.depth_at_max_power)
 
+def search_near(lc, period_hint, tol=0.02, n_periods=2000):
+    """BLS search restricted to ±tol around 1×, ½× and 2× a known period (e.g. a TOI's).
+    Windows longer than half the data span are skipped. The window with the highest BLS
+    power wins. Returns period, t0, duration, depth, and which multiple won ("1×", "½×", "2×").
+    """
+    t = np.asarray(lc.time.value, dtype=float)
+    half_span = (t.max() - t.min()) / 2
+    best = None
+    for factor, label in [(1, "1×"), (0.5, "½×"), (2, "2×")]:
+        P = factor * plain(period_hint)
+        if P * (1 + tol) > half_span:                  # must repeat ≥ 2× in the sector
+            continue
+        periods = np.linspace(P * (1 - tol), P * (1 + tol), n_periods)
+        pg = lc.to_periodogram(method="bls", period=periods,
+                               duration=[0.05, 0.08, 0.1, 0.15, 0.2])
+        power = plain(pg.max_power)
+        if best is None or power > best[0]:
+            best = (power, label, pg)
+    if best is None:
+        raise ValueError(f"Period hint {plain(period_hint):.3f} d is longer than half the data span")
+    _, label, pg = best
+    return (pg.period_at_max_power, pg.transit_time_at_max_power,
+            pg.duration_at_max_power, pg.depth_at_max_power, label)
+
 """---
 # 4. Transit model and fit
 Limb-darkened batman model with impact parameter b (well-behaved near edge-on, unlike
@@ -460,13 +484,21 @@ download → search one sector → fit one sector → (more sectors) clean all w
 timing and refit → automatic upper limit if b is flagged → optional vetting report.
 """
 
-def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False):
-    """Run the full pipeline on a star. Returns a dictionary of results."""
+def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
+                 period_hint=None):
+    """Run the full pipeline on a star. Returns a dictionary of results.
+    period_hint: a known period (e.g. the TOI's); the search then only looks within ±2% of
+    1×, ½× or 2× of it, so we vet that signal and not a different one.
+    """
     lcs = download(star_name, n_sectors)
     star_info, star_source = get_star_info(lcs[0])
 
     # Search and first fit on ONE sector
-    period, t0, duration, depth = search(clean(lcs[0]), plot=plot)
+    period_choice = None
+    if period_hint is None:
+        period, t0, duration, depth = search(clean(lcs[0]), plot=plot)
+    else:
+        period, t0, duration, depth, period_choice = search_near(clean(lcs[0]), period_hint)
     c1 = clean(lcs[0], period=period, t0=t0, duration=duration)
     popt, errs, inc, inc_err, flags = fit_transit(c1, period, t0, duration, depth,
                                                   plot=plot and len(lcs) == 1)
@@ -481,7 +513,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False):
     rho = 3 * np.pi / (G * (popt[1] * 86400)**2) * popt[3]**3 / 1000
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
-               "lc": cleaned, "star_info": star_info,
+               "lc": cleaned, "star_info": star_info, "period_choice": period_choice,
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
@@ -537,19 +569,25 @@ def period_match(P, P_pub, tol=0.01):
             return label
     return "NO"
 
-def batch_run(targets, n_sectors=2):
-    """Run analyze_star on every target. Returns (summary table, full results by star)."""
+def batch_run(targets, n_sectors=2, use_hint=False):
+    """Run analyze_star on every target (star → published/TOI period).
+    use_hint=True passes each target's period as period_hint.
+    Returns (summary table, full results by star).
+    """
     rows, all_results = [], {}
     for star, P_pub in targets.items():
         start = time.time()
         try:
             with contextlib.redirect_stdout(io.StringIO()):          # silence each star's printout
-                r = analyze_star(star, n_sectors=n_sectors, verbose=False, vet=True)
+                r = analyze_star(star, n_sectors=n_sectors, verbose=False, vet=True,
+                                 period_hint=P_pub if use_hint else None)
             all_results[star] = r
             v = r["vetting"]
             rows.append({"star": star, "sectors": r["n_sectors"],
                          "period": round(r["period"][0], 5), "published P": P_pub,
                          "P match": period_match(r["period"][0], P_pub),
+                         "period choice": r["period_choice"],
+                         "star source": r["star_source"],
                          "Rp/Rs": round(r["Rp/Rs"][0], 4),
                          "Rp (R_Jup)": round(v["rp_jup"], 2) if v["rp_jup"] else None,
                          "SNR": round(v["snr"]), "checks": f"{v['n_pass']}/{v['n_run']}",
