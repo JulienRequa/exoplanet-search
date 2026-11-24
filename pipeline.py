@@ -45,6 +45,41 @@ def download(star_name, n_sectors=1):
         raise ValueError(f"No TESS 2-minute data found for {star_name}")
     return list(search[:n_sectors].download_all())
 
+# Header keyword → TIC catalog column (same quantity, same units: K, cgs dex, solar radii)
+TIC_COLUMNS = {"TEFF": "Teff", "LOGG": "logg", "RADIUS": "rad"}
+
+def _missing(x):
+    """True if a header/catalog value is absent: None, empty, masked or NaN."""
+    try:
+        return x is None or np.ma.is_masked(x) or not np.isfinite(float(x))
+    except (TypeError, ValueError):
+        return True
+
+def get_star_info(lc):
+    """Stellar Teff, log g and radius. Uses the light-curve header first; only values that
+    are missing (None or NaN) are filled from the TIC catalog (MAST).
+    Returns (star_info, source), e.g. source = {"TEFF": "header", "LOGG": "TIC", ...}.
+    """
+    info = {k: lc.meta.get(k) for k in TIC_COLUMNS}
+    source = {}
+    for k in info:
+        if _missing(info[k]):
+            info[k], source[k] = None, "missing"
+        else:
+            info[k], source[k] = float(info[k]), "header"
+
+    if None in info.values():
+        tic = lc.meta.get("TICID")
+        try:
+            from astroquery.mast import Catalogs
+            row = Catalogs.query_criteria(catalog="Tic", ID=int(tic))[0]
+            for k, col in TIC_COLUMNS.items():
+                if info[k] is None and not _missing(row[col]):
+                    info[k], source[k] = float(row[col]), "TIC"
+        except Exception as e:                       # no TIC ID / network trouble → stay N/A
+            print(f"TIC lookup failed for TIC {tic}: {type(e).__name__}")
+    return info, source
+
 """---
 # 2. Cleaning
 clean(): one sector. Remove NaNs → trim 0.25 d before/after data gaps (spacecraft ramps)
@@ -428,7 +463,7 @@ timing and refit → automatic upper limit if b is flagged → optional vetting 
 def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False):
     """Run the full pipeline on a star. Returns a dictionary of results."""
     lcs = download(star_name, n_sectors)
-    star_info = {k: lcs[0].meta.get(k) for k in ["TEFF", "LOGG", "RADIUS"]}
+    star_info, star_source = get_star_info(lcs[0])
 
     # Search and first fit on ONE sector
     period, t0, duration, depth = search(clean(lcs[0]), plot=plot)
@@ -446,7 +481,8 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False):
     rho = 3 * np.pi / (G * (popt[1] * 86400)**2) * popt[3]**3 / 1000
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
-               "lc": cleaned, "star_info": star_info}
+               "lc": cleaned, "star_info": star_info,
+               "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
 
