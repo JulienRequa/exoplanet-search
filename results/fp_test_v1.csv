@@ -1,0 +1,21 @@
+star,sectors,period,published P,P match,Rp/Rs,Rp (R_Jup),SNR,checks,verdict,flags,time (s),TOI,Comments
+TIC 29336129,2.0,1.63581,1.63638219397965,yes,0.0384,0.64,24.0,4/4,PLANET CANDIDATE (some checks weak or not run),"t0, period, Rp/Rs, a/Rs, b, u1, u2",20.0,2933.01,found in faint-star QLP search; centroid offset near TIC 29336132 (Tmag~18.2) in SPOC multisector; retired as TFOP FP/NEB
+TIC 269450900,2.0,2.32468,2.32439,yes,0.2644,6.97,500.0,3/4,LIKELY FALSE POSITIVE,"Rp/Rs, a/Rs, b, u1, u2",16.0,1127.01,Possible centroid shift
+TIC 263203229,1.0,5.0045,5.0061978,yes,0.0677,1.04,16.0,4/4,PLANET CANDIDATE (some checks weak or not run),"period, b, u1, u2",16.0,6741.01,found in faint-star QLP search; TFOP NPC (on TIC 263203214: T=15.1Â  dT=2.3)
+TIC 55390413,,,,,,,,,ERROR: ValueError,,,6994.01,found in faint-star QLP search
+TIC 290348382,,,,,,,,,ERROR: ValueError,,,1113.01,2 stars in the same pixel (290348383); retired as TFOP NPC
+TIC 28873762,2.0,3.10552,3.105654,yes,0.2713,3.89,48.0,2/4,LIKELY FALSE POSITIVE,"Rp/Rs, b, u1, u2",12.0,3684.01,potential weak secondary; V-shaped; found in faint-star QLP search
+TIC 68322189,1.0,1.28557,1.2833689,yes,0.1726,1.74,113.0,5/5,PLANET CANDIDATE,"u1, u2",11.0,5016.01,found in faint-star QLP search; v-shaped; crowded field
+TIC 66356824,2.0,1.77708,3.55562,½×,0.0368,0.49,13.0,3/4,LIKELY FALSE POSITIVE,"a/Rs, b, u1, u2",21.0,315.01,odd-even; TFOP FP; retired as EB
+TIC 308396509,2.0,2.14828,2.1481182,yes,0.1346,,146.0,3/3,PLANET CANDIDATE (some checks weak or not run),"u1, u2",12.0,2625.01,found in faint-star QLP search; no stellar radius; phase modulations and secondary in SPOC s1-s69; retired as TFOP FP/EB
+TIC 144043410,1.0,0.5397,6.26365006546498,NO,0.0392,0.8,40.0,5/5,PLANET CANDIDATE,"t0, a/Rs, b, u1, u2",30.0,2554.01,stellar variability at timescales shorter than orbital period
+TIC 686072378,,,,,,,,,ERROR: ValueError,,,2438.01,Short transit duration. Likely a Jupiter around WD!! Planet radius is calculated for Sun-like star and should not be included with the alert delivery.
+TIC 146846569,,,,,,,,,ERROR: ValueError,,,734.01,~21000 ppm secondary in SPOC s1-s65; retired as TFOP FP/SEB1
+TIC 441738827,2.0,6.07723,8.148521808406587,NO,0.0448,0.21,11.0,4/4,PLANET CANDIDATE (some checks weak or not run),"u1, u2",13.0,2084.02,TFOP FP (NEB); ~800 ppm secondary
+TIC 231076038,2.0,8.24307,8.2500143,yes,0.0379,0.6,13.0,4/4,PLANET CANDIDATE (some checks weak or not run),"u1, u2",14.0,2618.01,found in faint-star QLP search; slight odd-even; consistent offset near TIC 231076041 (Tmag~16.4) in spoc-s01-s69; retired as TFOP FP/NEB
+TIC 285233023,1.0,2.86087,2.8577028,yes,0.0499,0.72,10.0,3/4,LIKELY FALSE POSITIVE,"period, a/Rs, b, u1, u2",16.0,6298.01,found in faint-star QLP search
+TIC 294315741,1.0,3.56786,3.5678072,yes,0.3,5.1,43.0,3/4,LIKELY FALSE POSITIVE,"period, Rp/Rs, a/Rs, b, u1, u2",14.0,4985.01,found in faint-star QLP search; likely inflated hot Jupiter; retired as TFOP FP/NEB
+TIC 146261607,,,,,,,,,ERROR: ValueError,,,591.01,8.5 day signal is EB
+TIC 140706664,1.0,3.29148,3.28892,yes,0.1762,,42.0,3/3,PLANET CANDIDATE (some checks weak or not run),"period, Rp/Rs, a/Rs, b, u1, u2",14.0,1020.01,slightly V shaped; possibly off target to N
+TIC 306547699,1.0,2.69831,2.6985136,yes,0.207,,53.0,3/3,PLANET CANDIDATE (some checks weak or not run),"u1, u2",16.0,3216.01,found in faint-star QLP search
+TIC 279769094,2.0,0.65303,4.5029619,NO,0.0325,0.57,11.0,3/4,LIKELY FALSE POSITIVE,"a/Rs, b, u1, u2",27.0,4047.01,found in faint-star QLP search
