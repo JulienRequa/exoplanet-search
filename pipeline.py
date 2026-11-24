@@ -666,7 +666,10 @@ def fp_test_v1():
     sample = fp.sample(20, random_state=1)                 # random, but repeatable
     FP_TARGETS = {f"TIC {int(r['TIC ID'])}": r["Period (days)"] for _, r in sample.iterrows()}
     print(sample[["TOI", "TIC ID", "Period (days)", "Depth (ppm)", "Comments"]])
-    return batch_run(FP_TARGETS)
+    fp_summary, fp_results = batch_run(FP_TARGETS)
+    sample["star"] = ["TIC " + str(int(x)) for x in sample["TIC ID"]]
+    merged = fp_summary.merge(sample[["star", "TOI", "Comments"]], on="star")
+    return merged, fp_results
 
 """---
 # Development notes

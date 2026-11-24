@@ -84,3 +84,16 @@ TIC (TOI): 29336129 (2933.01), 269450900 (1127.01), 263203229 (6741.01), 5539041
   singular. Best-fit values don't move, but the a/Rs error swings (±2.2 → ±6.3) with
   microscopic changes in where the fit lands; its density WEAK/PASS status is fragile.
   Bug fix 1's side effect also flags pi Men's Rp/Rs (0.0166, within 0.0099 of the 0.01 floor).
+
+## 2026-11-24 — Grazing check, v1 record, GitHub sync
+- Grazing check + three-level verdict added. Regression: 13/13, all fitted values identical,
+  no grazing warnings on known planets (b + Rp/Rs between 0.02 and 0.85).
+- **Grazing check has almost no power** (simulations, 3 seeds × 2 noise levels): 0/6
+  simulated grazing transits (b = 1.02, Rp/Rs = 0.15) were flagged, even at 200 ppm. With free
+  limb darkening, a high-b non-grazing solution fits as well or better (χ² 19143.5 vs 19146.7
+  for the truth), sometimes with confident-looking but wrong errors (b+k = 0.993 ± 0.010).
+  Kept as tests/test_fixes.py::test_grazing_transit_flagged (xfail). Decide before v2 freeze.
+- results/fp_test_v1.csv committed as the official v1 record (from Colab).
+- Pulled final Colab pipeline.ipynb (commit 3ed189d): only adds the FP-test v1 cells, no
+  function changes. Its saved outputs record the v1 TOI table: 8175 TOIs, 627 FPs passing
+  the cuts. fp_test_v1() in pipeline.py now also merges in the Comments, as the notebook does.
