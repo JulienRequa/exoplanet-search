@@ -18,7 +18,8 @@ planets from false positives.
 - Duration ≈ 2 hours; rounded bottom from limb darkening
 
 ## Notebook
-`exoplanet_search.ipynb`: open with the "Open in Colab" badge to run it.
+- **[View the notebook on GitHub](exoplanet_search.ipynb)**: code, plots, and notes
+- **Run it yourself:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JulienRequa/exoplanet-search/blob/main/exoplanet_search.ipynb)
 
 ## Author
 Julien Requa: Phillips Academy Andover '29
