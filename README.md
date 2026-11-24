@@ -45,9 +45,9 @@ Both planets agree well with published values.
 5. Machine-learning classifier (built from scratch in NumPy) for planet vs. false positive
 
 ## Notebooks
-- **[exoplanet_search.ipynb](exoplanet_search.ipynb)**: lab notebook: building and testing
+- **[lab_notebook.ipynb](lab_notebook.ipynb)**: lab notebook: building and testing
   the pipeline on WASP-18 b and WASP-121 b, including every mistake and fix
-  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JulienRequa/exoplanet-search/blob/main/exoplanet_search.ipynb)
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JulienRequa/exoplanet-search/blob/main/lab_notebook.ipynb)
 - **pipeline.ipynb**: the clean, reusable pipeline (coming next)
 
 ## Author
