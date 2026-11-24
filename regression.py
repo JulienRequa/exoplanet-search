@@ -14,12 +14,13 @@ import pipeline as pl
 RUNS = [(star, 2, P) for star, P in pl.TARGETS.items()] + [("WASP-18", 4, 0.9415)]
 
 
-def row_for(star, n_sectors, P_pub):
+def row_for(star, n_sectors, P_pub, hint=False):
     row = {"star": star, "sectors_requested": n_sectors}
     t = time.time()
     try:
         with contextlib.redirect_stdout(io.StringIO()):
-            r = pl.analyze_star(star, n_sectors=n_sectors, verbose=False, vet=True)
+            r = pl.analyze_star(star, n_sectors=n_sectors, verbose=False, vet=True,
+                                period_hint=P_pub if hint else None)
     except Exception as e:
         row["error"] = f"{type(e).__name__}: {e}"[:200]
         return row
@@ -41,6 +42,11 @@ def row_for(star, n_sectors, P_pub):
         row["check: " + name] = status
         row["detail: " + name] = detail
     row["verdict"], row["n_pass"], row["n_run"] = v["verdict"], v["n_pass"], v["n_run"]
+    c = v.get("centroid")
+    if c:
+        row["centroid_sigma"], row["centroid_dist"], row["centroid_dist_err"] = c["sigma"], c["dist"], c["dist_err"]
+    for k in ("CROWDSAP", "TESSMAG"):
+        row[k] = r["raw_lcs"][0].meta.get(k) if "raw_lcs" in r else None
     row["time_s"] = round(time.time() - t)
     return row
 

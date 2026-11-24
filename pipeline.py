@@ -500,6 +500,104 @@ def grazing_check(results):
     g_err = np.sqrt(var)
     return g, g_err, g / g_err
 
+def _target_pixel(lc):
+    """Target's CCD (column, row) from its RA/Dec and the WCS of the file's aperture image.
+    None if the file/WCS isn't available."""
+    try:
+        import warnings
+        from astropy.io import fits
+        from astropy.wcs import WCS
+        with warnings.catch_warnings(), fits.open(lc.meta["FILENAME"]) as h:
+            warnings.simplefilter("ignore")
+            ah = h["APERTURE"].header
+            x, y = WCS(ah).all_world2pix(lc.meta["RA_OBJ"], lc.meta["DEC_OBJ"], 0)
+            return float(x) + ah["CRVAL1P"], float(y) + ah["CRVAL2P"]
+    except Exception:
+        return None
+
+def centroid_check(results, n_null=200, seed=0, window=721):
+    """Does the flux-weighted centroid move during transit, and where is the dimming source?
+    Per sector: Δ = centroid(in-transit core) − centroid(baseline 1–3 durations away), after
+    removing slow drifts (running median, transits masked). Noise σ from n_null fake transits
+    at random times (captures pointing jitter / red noise). Significance: D² = Σ(Δ/σ)² over
+    x, y and sectors, χ² with 2 dof per sector → Gaussian-equivalent σ.
+    Source position ≈ out-of-transit centroid − Δ·(1 − δ)/δ (δ = depth); distance from the
+    target's WCS position, in pixels (1 TESS pixel = 21″).
+    Returns dict, or None if no usable centroid data.
+    """
+    from scipy.stats import chi2 as chi2_dist, norm
+    popt = get_popt(results)
+    t0, P = popt[0], popt[1]
+    grid = np.linspace(-0.5, 0.5, 20001)                       # phase grid (orbits)
+    m_grid = transit_model(t0 + grid * P, *popt)
+    depth = 1 - m_grid.min()
+    dur = np.mean(m_grid < 1)                                  # transit duration (orbits)
+    if depth <= 0 or dur <= 0:
+        return None
+    core_half = 0.5 * np.mean(m_grid < 1 - 0.5 * depth)        # half-width of deep core
+    rng = np.random.default_rng(seed)
+    allowed = np.r_[np.linspace(4 * dur, 0.5 - 4 * dur, 500),  # fake-transit phases away from
+                    np.linspace(0.5 + 4 * dur, 1 - 4 * dur, 500)]  # transit and phase 0.5
+    allowed = allowed[(allowed > 0) & (allowed < 1)]
+    if len(allowed) < 20:
+        return None
+    shifts = rng.choice(allowed, n_null)
+
+    D2, dof, sectors = 0.0, 0, []
+    for lc in results.get("raw_lcs", []):
+        lc = lc.remove_nans()
+        t = np.asarray(lc.time.value, float)
+        cx = np.asarray(getattr(lc, "centroid_col", np.full(len(t), np.nan)).value, float)
+        cy = np.asarray(getattr(lc, "centroid_row", np.full(len(t), np.nan)).value, float)
+        ok = np.isfinite(t) & np.isfinite(cx) & np.isfinite(cy)
+        t, cx, cy = t[ok], cx[ok], cy[ok]
+        if len(t) < 500:
+            continue
+        phase = ((t - t0) / P) % 1                             # 0 = transit
+        sym = lambda ph: np.abs((ph + 0.5) % 1 - 0.5)          # distance from phase 0
+        # slow drifts: running median with transits masked, interpolated across them
+        quiet = sym(phase) > dur
+        trend = lambda c: np.interp(t, t[quiet], pd.Series(c[quiet]).rolling(
+            window, center=True, min_periods=window // 4).median().bfill().ffill().values)
+        dx, dy = cx - trend(cx), cy - trend(cy)
+
+        def delta(shift):
+            d = sym(phase - shift)
+            inn, out = d < core_half, (d > dur) & (d < 3 * dur)
+            if inn.sum() < 10 or out.sum() < 10:
+                return None
+            return dx[inn].mean() - dx[out].mean(), dy[inn].mean() - dy[out].mean(), inn, out
+        real = delta(0.0)
+        if real is None:
+            continue
+        ddx, ddy, inn, out = real
+        null = np.array([v[:2] for v in (delta(sh) for sh in shifts) if v is not None])
+        if len(null) < 20:
+            continue
+        sx, sy = null[:, 0].std(), null[:, 1].std()
+        D2 += (ddx / sx) ** 2 + (ddy / sy) ** 2
+        dof += 2
+
+        scale = (1 - depth) / depth                            # centroid shift → source offset
+        src = np.array([cx[out].mean() - ddx * scale, cy[out].mean() - ddy * scale])
+        tgt = _target_pixel(lc)
+        ref = np.array(tgt) if tgt is not None else np.array([cx[out].mean(), cy[out].mean()])
+        v = src - ref
+        dist = np.hypot(*v)
+        dist_err = np.hypot(v[0] * sx, v[1] * sy) * scale / dist if dist > 0 else np.hypot(sx, sy) * scale
+        sectors.append({"sector": lc.meta.get("SECTOR"), "dx": ddx, "dy": ddy, "sx": sx, "sy": sy,
+                        "dist": dist, "dist_err": dist_err,
+                        "ref": "TIC position" if tgt is not None else "out-of-transit centroid"})
+    if dof == 0:
+        return None
+    p = chi2_dist.sf(D2, dof)
+    z = float(norm.isf(p / 2)) if p > 0 else np.inf            # two-sided Gaussian equivalent
+    w = np.array([1 / s["dist_err"] ** 2 for s in sectors])
+    dist = float(np.sum(w * [s["dist"] for s in sectors]) / w.sum())
+    dist_err = float(1 / np.sqrt(w.sum()))
+    return {"sigma": z, "D2": D2, "dof": dof, "dist": dist, "dist_err": dist_err,
+            "sectors": sectors}
+
 """---
 # 7. Vetting report
 Runs every check silently and prints one report card. Planet size catches star-sized
@@ -517,6 +615,7 @@ def vet_star(results, verbose=True):
         sec_depth, sec_err, sec_sigma, sec_ratio = secondary_eclipse(lc, popt)
         dens = density_check(results)
     g, g_err, g_sigma = grazing_check(results)
+    cen = centroid_check(results) if "raw_lcs" in results else None
 
     # Detection strength: dip depth vs noise of the averaged in-transit points
     t = np.asarray(lc.time.value, dtype=float)
@@ -560,6 +659,19 @@ def vet_star(results, verbose=True):
         checks.append(("Grazing", "WARN" if g_sigma > 3 else "PASS",
                        f"b + Rp/Rs = {g + 1:.2f} ± {g_err:.2f} ({g_sigma:+.1f}σ from 1)"))
 
+    if cen is None:
+        checks.append(("Centroid", "N/A", "no usable centroid data"))
+    else:
+        detail = (f"shift {cen['sigma']:.1f}σ, source {cen['dist']:.2f} ± "
+                  f"{cen['dist_err']:.2f} px from target")
+        if cen["sigma"] > 3 and cen["dist"] > 1:
+            status = "FAIL"                                # signal from a neighbouring star
+        elif cen["dist_err"] > 1:
+            status = "WEAK"                                # too noisy to locate the source
+        else:
+            status = "PASS"
+        checks.append(("Centroid", status, detail))
+
     statuses = [c[1] for c in checks]
     n_run = sum(s in ("PASS", "FAIL", "WARN") for s in statuses)  # WEAK / N/A don't count
     n_pass = statuses.count("PASS")
@@ -587,6 +699,7 @@ def vet_star(results, verbose=True):
         print(f"VERDICT: {verdict} ({n_pass}/{n_run} checks passed)")
 
     report = {"checks": checks, "snr": snr, "rp_jup": rp_jup, "verdict": verdict,
+              "centroid": cen,
               "n_pass": n_pass, "n_run": n_run}
     results["vetting"] = report
     return report
@@ -631,7 +744,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
                "lc": cleaned, "star_info": star_info, "period_choice": period_choice,
-               "ld_source": ld_source,
+               "ld_source": ld_source, "raw_lcs": lcs,
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
