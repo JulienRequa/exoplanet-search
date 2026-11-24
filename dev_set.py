@@ -9,10 +9,14 @@ import pandas as pd
 import pipeline as pl
 from regression import row_for
 
-def main(out):
+def main(out, only=None):
     v1 = pd.read_csv("results/fp_test_v1.csv")
     targets = [(s, P, "known planet") for s, P in pl.TARGETS.items()]
-    targets += [(r["star"], r["published P"], "v1 FP") for _, r in v1.iterrows()]
+    # TOI periods from the v1 sample (pipeline.ipynb output); fp_test_v1.csv lacks them for errored rows
+    samp = pd.read_csv("data/fp_sample_v1.csv")
+    targets += [(f"TIC {int(r['TIC ID'])}", r["Period (days)"], "v1 FP") for _, r in samp.iterrows()]
+    if only:
+        targets = [x for x in targets if x[0] in only]
     rows = []
     for star, P, kind in targets:
         row = {"kind": kind, **row_for(star, 2, P, hint=True)}
@@ -24,4 +28,4 @@ def main(out):
     print("saved", out)
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], only=sys.argv[2:] or None)

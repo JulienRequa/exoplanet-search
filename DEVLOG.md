@@ -123,3 +123,19 @@ TIC (TOI): 29336129 (2933.01), 269450900 (1127.01), 263203229 (6741.01), 5539041
   Dev FPs with neighbour Comments: shifts 2.8σ, 1.5σ, 3.2σ, 7.8σ, but the named neighbours
   are at 0.60, 0.47, 1.22, ~0.5–0.6 px → 3 of 4 are inside the 1 px limit by construction;
   the 1.22 px one is measured at 0.53 px (aperture truncation biases moment centroids low).
+
+## 2026-11-24 — Dev set (13 known planets + 20 v1 FPs), draft v2 rules, no LD prior yet
+DEVELOPMENT ONLY — v1 is not re-scored as an improvement. All runs with period_hint.
+- Known planets: 13/13 kept (12 PLANET CANDIDATE, pi Men PC with Density + Centroid WEAK).
+  No grazing WARN, no centroid FAIL. Centroid shifts on planets are often highly significant
+  (up to 13σ, HD 189733) but the implied source stays within 0.39 px of the target.
+- v1 FPs: 3 no 2-min data, 1 error (TIC 146846569, 23% deep: curve_fit max evaluations
+  exceeded), 1 period mismatch (TIC 441738827), 15 testable → 6 caught (40%).
+  FAILs: odd/even 3, size 3, SNR 1, secondary 1, centroid 1 (TIC 269450900, 1.24 px).
+- Density is WEAK for 9 of 15 testable FPs (free LD → large a/Rs errors): the LD prior
+  should matter a lot here.
+- 4 neighbour-contaminated dev FPs: none FAIL the centroid check (3 neighbours < 1 px;
+  measured 0.28–0.66 px vs planets ≤ 0.39 px). Two V-shaped FPs: no grazing WARN.
+- TIC has no log g / radius for 4 FPs (so size/density N/A) — the fallback worked; the TIC
+  simply lacks them. TOI 2438.01 (Comment: Jupiter around a WD?) hits Rp/Rs = 1.0, no radius.
+- data/fp_sample_v1.csv: v1 sample TOI periods/depths from pipeline.ipynb's saved output.
