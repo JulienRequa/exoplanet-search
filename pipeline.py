@@ -164,8 +164,14 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
         guess = list(start)
         dt = max(0.01, 5 * start_errs[0]) if start_errs is not None else 0.01
         dP = max(0.0001, 5 * start_errs[1]) if start_errs is not None else 0.0001
+    # Rp/Rs may reach 1.0: eclipsing binaries can be star-sized (bug fix, 2026-11-24)
     bounds = ([guess[0] - dt, guess[1] - dP, 0.01, 1.5,   0.0, 0.0, -0.5],
-              [guess[0] + dt, guess[1] + dP, 0.30, 100.0, 1.2, 1.0,  1.0])
+              [guess[0] + dt, guess[1] + dP, 1.00, 100.0, 1.2, 1.0,  1.0])
+
+    # Keep every starting guess inside its bounds (a very deep eclipse used to give a
+    # guess Rp/Rs = sqrt(depth) above the cap → curve_fit crashed). Guesses already inside
+    # are unchanged.
+    guess = np.clip(guess, bounds[0], bounds[1])
 
     popt, pcov = curve_fit(transit_model, t, f, p0=guess, bounds=bounds)
     errs = np.sqrt(np.diag(pcov))
@@ -214,7 +220,7 @@ def profile_b(lc, popt, b_max=1.0, n=21, plot=False):
             return transit_model(t, t0, per, rp, a, bb, u1, u2)
         start = [popt[0], popt[1], popt[2], popt[3], popt[5], popt[6]]
         lo = [popt[0] - 0.01, popt[1] - 0.0001, 0.01, 1.5,   0.0, -0.5]
-        hi = [popt[0] + 0.01, popt[1] + 0.0001, 0.30, 100.0, 1.0,  1.0]
+        hi = [popt[0] + 0.01, popt[1] + 0.0001, 1.00, 100.0, 1.0,  1.0]   # Rp/Rs cap = fit_transit's
         pf, _ = curve_fit(model_fixed_b, t, f, p0=start, bounds=(lo, hi))
         chi2.append(np.sum((f - model_fixed_b(t, *pf))**2) / sigma**2)
 
