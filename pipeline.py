@@ -202,9 +202,10 @@ def plot_fit(t, f, popt):
     plt.show()
 
 def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
-                plot=False, verbose=False):
+                plot=False, verbose=False, return_pcov=False):
     """Fit the transit model. `start` = a previous best fit; `start_errs` = its uncertainties
     (sets how far timing may move). Returns: popt, errs, inc, inc_err, flags
+    (+ the covariance matrix pcov if return_pcov=True)
     """
     P0, T00, D = plain(period), plain(t0), plain(duration)
     if start is not None:                                     # use refined timing
@@ -253,6 +254,8 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
 
     if plot:
         plot_fit(t, f, popt)
+    if return_pcov:
+        return popt, errs, inc, inc_err, flags, pcov
     return popt, errs, inc, inc_err, flags
 
 """---
@@ -399,6 +402,20 @@ def density_check(results):
           f"{rho_fit_err:.2f} g/cm³ → ratio {ratio:.2f}, {sigma:.1f}σ" + (" (WEAK)" if weak else ""))
     return rho_cat, ratio, sigma, weak
 
+def grazing_check(results):
+    """Is the transit grazing (the object only clips the stellar edge)? That happens when
+    b + Rp/Rs > 1. Returns (g, g_err, sigma) with g = b + Rp/Rs − 1; sigma = g / g_err
+    (None if the uncertainty can't be computed). Error includes the b–Rp/Rs covariance.
+    """
+    k, k_err = results["Rp/Rs"]
+    b, b_err = results["b"]
+    g = b + k - 1
+    var = b_err**2 + k_err**2 + 2 * results.get("cov_rp_b", 0.0)
+    if not np.isfinite(var) or var <= 0:
+        return g, None, None
+    g_err = np.sqrt(var)
+    return g, g_err, g / g_err
+
 """---
 # 7. Vetting report
 Runs every check silently and prints one report card. Planet size catches star-sized
@@ -415,6 +432,7 @@ def vet_star(results, verbose=True):
         _, _, oe_sigma = odd_even(lc, popt)
         sec_depth, sec_err, sec_sigma, sec_ratio = secondary_eclipse(lc, popt)
         dens = density_check(results)
+    g, g_err, g_sigma = grazing_check(results)
 
     # Detection strength: dip depth vs noise of the averaged in-transit points
     t = np.asarray(lc.time.value, dtype=float)
@@ -443,17 +461,28 @@ def vet_star(results, verbose=True):
         else:
             status = "PASS"
         checks.append(("Density", status, f"transit / catalog = {ratio:.2f} ({dsig:.1f}σ)"))
+    rp_capped = "Rp/Rs" in results["flags"] and popt[2] > 0.5   # stuck at the 1.0 cap
     if rp_jup is None:
         checks.append(("Planet size", "N/A", "no stellar radius"))
+    elif rp_capped:          # true Rp/Rs may be larger (e.g. white-dwarf host) → lower limit
+        checks.append(("Planet size", "FAIL" if rp_jup >= 2.5 else "WEAK",
+                       f"Rp ≥ {rp_jup:.2f} R_Jup (Rp/Rs at its cap → lower limit)"))
     else:
         checks.append(("Planet size", "PASS" if rp_jup < 2.5 else "FAIL",
                        f"Rp = {rp_jup:.2f} R_Jup"))
+    if g_sigma is None:
+        checks.append(("Grazing", "N/A", f"b + Rp/Rs = {g + 1:.2f} (no uncertainty)"))
+    else:
+        checks.append(("Grazing", "WARN" if g_sigma > 3 else "PASS",
+                       f"b + Rp/Rs = {g + 1:.2f} ± {g_err:.2f} ({g_sigma:+.1f}σ from 1)"))
 
     statuses = [c[1] for c in checks]
-    n_run = sum(s in ("PASS", "FAIL") for s in statuses)  # only checks with real power count
+    n_run = sum(s in ("PASS", "FAIL", "WARN") for s in statuses)  # WEAK / N/A don't count
     n_pass = statuses.count("PASS")
     if "FAIL" in statuses:
         verdict = "LIKELY FALSE POSITIVE"
+    elif "WARN" in statuses:
+        verdict = "CANDIDATE WITH WARNINGS"
     elif n_pass < len(checks):
         verdict = "PLANET CANDIDATE (some checks weak or not run)"
     else:
@@ -500,15 +529,17 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     else:
         period, t0, duration, depth, period_choice = search_near(clean(lcs[0]), period_hint)
     c1 = clean(lcs[0], period=period, t0=t0, duration=duration)
-    popt, errs, inc, inc_err, flags = fit_transit(c1, period, t0, duration, depth,
-                                                  plot=plot and len(lcs) == 1)
+    popt, errs, inc, inc_err, flags, pcov = fit_transit(c1, period, t0, duration, depth,
+                                                        plot=plot and len(lcs) == 1,
+                                                        return_pcov=True)
     cleaned = c1
 
     # Refine with all sectors, timing window set by the 1-sector uncertainties
     if len(lcs) > 1:
         cleaned = clean_all(lcs, period=popt[1], t0=popt[0], duration=duration)
-        popt, errs, inc, inc_err, flags = fit_transit(cleaned, period, t0, duration, depth,
-                                                      start=popt, start_errs=errs, plot=plot)
+        popt, errs, inc, inc_err, flags, pcov = fit_transit(cleaned, period, t0, duration, depth,
+                                                            start=popt, start_errs=errs,
+                                                            plot=plot, return_pcov=True)
 
     rho = 3 * np.pi / (G * (popt[1] * 86400)**2) * popt[3]**3 / 1000
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
@@ -517,6 +548,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
+    results["cov_rp_b"] = pcov[2, 4]                  # for the grazing check
 
     # Automatic upper limit when b is stuck near 0 (nearly edge-on)
     if "b" in flags and popt[4] < 0.5:
