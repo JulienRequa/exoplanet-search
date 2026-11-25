@@ -2,6 +2,8 @@
 
     python sampling.py blind    → data/blind_v2.csv  (100 FP + 100 CP/KP, random_state=2)
     python sampling.py dev      → data/dev_v2.csv    (40 FP + 20 CP/KP, random_state=3)
+    python sampling.py hunt     → data/hunt_v2_targets_2026-11-25.csv (all open PC TOIs in the
+                                  v2 tested range; every TOI kept, even several per star)
 
 Same cuts as v1: period 0.5–10 d, depth > 2000 ppm. Exclusions are by TIC ID (one star can
 host several TOIs), and each pool keeps one TOI per star (lowest TOI number) so no star is
@@ -13,6 +15,7 @@ import pandas as pd
 
 SNAPSHOT = "data/toi_2026-11-24.csv"
 V1_SAMPLE = "data/fp_sample_v1.csv"
+HUNT_LIST = "data/hunt_v2_targets_2026-11-25.csv"
 # Hosts of the 13 known-planet regression targets (pipeline.TARGETS)
 KNOWN_TICS = {"WASP-18": 100100827, "WASP-121": 22529346, "WASP-19": 35516889,
               "WASP-43": 36734222, "HD 189733": 256364928, "HD 209458": 420814525,
@@ -55,6 +58,18 @@ def main(which):
         s = draw(toi, 100, 100, 4, exclude)
         s.to_csv("data/dev_v3.csv", index=False)
         print("dev_v3:", s["group"].value_counts().to_dict(), "| unique TICs:", s["TIC ID"].nunique())
+    elif which == "hunt":           # v2 hunting list (2026-11-25): open candidates, no sampling
+        for f in ("data/blind_v2.csv", "data/dev_v2.csv", "data/dev_v3.csv"):
+            exclude |= set(pd.read_csv(f)["TIC ID"])
+        h = toi[(toi["TFOPWG Disposition"] == "PC")
+                & toi["Period (days)"].between(0.5, 10)
+                & (toi["Depth (ppm)"] > 2000)
+                & ~toi["TIC ID"].isin(exclude)].sort_values("TOI")
+        h = h[["TOI", "TIC ID", "TFOPWG Disposition", "Period (days)", "Depth (ppm)",
+               "TESS Mag", "Comments"]]
+        h.to_csv(HUNT_LIST, index=False)
+        print("hunt_v2:", len(h), "TOIs on", h["TIC ID"].nunique(), "stars")
+        return
     # how many matching FPs/planets are still unused by any sample
     used = exclude | (set(pd.read_csv("data/dev_v3.csv")["TIC ID"]) if which == "dev3" else set())
     print("unused matching stars — FP:", len(pool(toi, ["FP"], used)),
