@@ -220,3 +220,20 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
 - Density: the circular-orbit assumption can bias ρ by [(1 ± e)/√(1 − e²)]³ (0.37–2.7 for
   e = 0.32; 0.13–8 for e = 0.6), which covers the whole FAIL region (outside 0.5–2×).
   Baseline: density caught 0 of the 45 testable FPs on its own or otherwise.
+
+### Dev-set runs after each fix (93 targets; each run from a clean checkout of its commit)
+| run | planets kept | FPs caught | notes |
+| baseline (35797d7) | 28/32 (88%) | 19/45 (42%) | 1 crash (TOI 734.01) |
+| 2a grazing profile (ab9d789) | 28/32 | 19/45 | WARN on 3 FPs (all already caught), 0 planets |
+| 2b maxfev 20000 (8d7b7b1) | 28/32 | 19/46 (41%) | 0 crashes; 80 converged fits bit-identical (max diff 0) |
+| 2c Claret priors (51edd55) | 29/32 (91%) | 22/46 (48%) | density catches 3 FPs (2 only by density); grazing WARN on 6 FPs, 0 testable planets |
+- Claret coverage (2c): 70 of 93 targets got a prior; 10 free (no Teff/log g); 1 free (outside
+  table); 12 not fitted (no 2-min data).
+- CORRECTION to the TOI-2416 b diagnosis: with priors b moves 0 → 0.64, a/Rs 17.4 → 13.6
+  (published 14.4) and density PASSES (1.32, 0.5σ). The main cause was the b–a/Rs
+  degeneracy with b pinned at 0 under free limb darkening; eccentricity (e = 0.32) is a
+  smaller contributor. Proposal "density → WARN" WITHDRAWN (it would now cost 2 catches).
+- pi Men did NOT stabilise with the prior: a/Rs ± 2.7 → ± 5.2, density still WEAK
+  (b ≈ 0.02 at its bound; shallow transit).
+- Remaining planet losses with 2c: HATS-55 b, TOI-2364 b (odd/even v3 proposal would rescue
+  both), TOI-2207 b (needs the ephemeris fix (e)).
