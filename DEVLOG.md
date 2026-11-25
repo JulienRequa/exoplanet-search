@@ -301,3 +301,14 @@ v2 hunting on open PC TOIs can start right after the blind run.
 no-reply format; push v2-vetting as-is tonight (with OK) to publicly timestamp that blind_v2
 was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: the freeze
 (tag v2-freeze), right after the blind run, and before hunting — each with Julien's OK.
+
+## 2026-11-24 — GitHub
+- gh 2.105.0 (official macOS arm64 release, SHA-256 verified against the release checksums,
+  code-signed) in ~/.local/bin; config in ~/.local/share/gh because ~/.config is owned by
+  root (fish install, Jul 2024). Logged in as JulienRequa via browser (device code).
+- Account created 2026-11-16 → no-reply format 357599494+JulienRequa@users.noreply.github.com,
+  set for FUTURE commits in this repo. Existing 38 commits keep JulienRequa@users.noreply.github.com
+  (private, not rewritten, so 0217ed9 and all DEVLOG hashes stay valid).
+- Pushed v2-vetting at dce7e0b (2026-11-24 17:56 PST): public record that blind_v2 was locked
+  (0217ed9) before the v2 improvements. Next pushes only at: freeze (tag v2-freeze), right after
+  the blind run, before hunting — each with Julien's OK.
