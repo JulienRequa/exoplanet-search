@@ -464,3 +464,27 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   ExoFOP-named neighbour both fit: light-curve centroids too weak to separate them).
 - All approved v2 changes are now built: odd/even v3, timing fix, Claret priors, proper motion,
   always-1× window, within-sector odd/even, neighbour-depth, download retry.
+
+## 2026-11-24/25 (night) — Full dev rerun (final v2 code 5df1d4b), crash fix, multi-start
+- Full rerun, 93 + 200 stars (results/devfull93_v2final_2026-11-24.csv,
+  results/devfull200_v2final_2026-11-24.csv). Testable planets kept 32/32 + 89/92 =
+  121/124 (97.6%); testable FPs caught 24/44 + 45/81 = 69/125 (55%; v1 baseline 42%).
+- 2 crashes (LinAlgError: TIC 1717732429 = TOI 1172.01, TIC 96246348). Cause: MAST listed
+  sector 40 twice → "2 sectors" was one sector doubled → both transit times on orbit 0 →
+  singular line fit. Fix deb681d: download each sector once; timing fit falls back to the
+  1-sector period if all times share one orbit. 2 new tests (fail on old code). Scan of all
+  dev stars for duplicate listings + 13-planet regression + rerun of affected stars queued.
+- 3 lost planets (all kept by 549e92e):
+  - HATS-28 b (TIC 6663331): density 2.38× catalog (4.3σ). Fit stuck at b = 0, a/Rs 12.65;
+    a fit started at b ≈ 0.6 ends at b 0.57, a/Rs 10.37 with lower χ². Sector 13 alone
+    prefers b ≈ 0, sector 67 alone b ≈ 0.73 (b–a/Rs degeneracy).
+  - HATS-64 b (TIC 189625051): odd/even 3.1σ. Honest threshold loss. Timing now correct
+    (both sectors within 1σ of the ephemeris); the old 1.4σ PASS used a period 0.0034 d off
+    (≈ 0.6 d drift over sectors 35 → 62), i.e. misaligned transits. No threshold change.
+  - K2-19 b (TIC 281885301): odd/even 3.0σ. Honest threshold loss; sectors 45/46 times within
+    errors. K2-19 b has large known transit-timing variations (near 3:2 resonance with
+    K2-19 c), which a straight-line ephemeris does not model. No threshold change.
+- Multi-start fit (Julien approved 2026-11-25; e216703): every fit_transit also starts at
+  b = 0.6, keeps the lower-χ² solution (b stuck at 0: TOI-2416 b, pi Men c, HATS-28 b).
+  HATS-28 b → PLANET CANDIDATE (density 1.31×, 0.7σ). 27 tests pass. Queued: 13-planet
+  regression (report every verdict change, both directions), then full 93 + 200 rerun.

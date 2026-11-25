@@ -90,6 +90,16 @@ rescues LTT 1445 A b and TOI-2266 (both had been analysed at 2× / ½×). Faint 
 results/devset_v3sample_window_rerun_2026-11-24.csv; DEVLOG.
 **Section.** methods (honest: benefit shown on real data, not in simulation).
 
+### M7. Multi-start fit against the b = 0 local minimum
+**Finding.** Transit fits can stick at impact parameter b = 0 (b–a/Rs degeneracy), inflating
+a/Rs and the transit density; LD priors (M3) reduce but do not remove it. Fitting from a
+second start (b = 0.6) and keeping the lower-χ² solution fixes the remaining cases.
+**Numbers.** HATS-28 b: b 0.00 → 0.57, a/Rs 12.65 → 10.37, density 2.38× (4.3σ, FAIL) →
+1.31× (0.7σ, PASS). Same pattern earlier: TOI-2416 b, pi Men c. 13-planet regression and
+full dev rerun: pending.
+**Evidence.** commit e216703; DEVLOG 2026-11-24/25.
+**Section.** methods.
+
 ---
 
 ## Results
@@ -145,3 +155,14 @@ fitted-period simulation sims/period_window_fit_sim.py (prototype checkout, to b
 (± 5.2), so the density check is WEAK.
 **Evidence.** results/devset93_c_priors_2026-11-24.csv; DEVLOG.
 **Section.** limitations.
+
+### L4. Planets with strong transit-timing variations (TTVs)
+**Finding.** The pipeline fits one straight-line ephemeris (fixed period). Planets whose
+transit times wander (gravitational tugs from a neighbour planet) are not modelled, which can
+misalign transits and push the odd/even test over its threshold.
+**Numbers.** K2-19 b (near 3:2 resonance with K2-19 c; TTVs of hours over years): odd/even
+3.0σ → FAIL in the full v2 dev rerun (honest threshold loss, threshold unchanged). Sectors
+45/46 times agree with the linear ephemeris within errors, so the effect here is small/
+borderline. Related: HATS-64 b also lost at 3.1σ (no TTVs known; statistical/systematic).
+**Evidence.** results/devfull200_v2final_2026-11-24.csv; DEVLOG 2026-11-24/25.
+**Section.** limitations (→ future: per-transit times, which also feed the sibling search).
