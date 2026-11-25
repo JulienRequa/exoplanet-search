@@ -488,3 +488,8 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   b = 0.6, keeps the lower-χ² solution (b stuck at 0: TOI-2416 b, pi Men c, HATS-28 b).
   HATS-28 b → PLANET CANDIDATE (density 1.31×, 0.7σ). 27 tests pass. Queued: 13-planet
   regression (report every verdict change, both directions), then full 93 + 200 rerun.
+- Duplicate-sector check (deb681d): scanned all 293 dev stars' MAST listings; only the 2
+  crashed stars had a doubled sector (TIC 1717732429: S40 ×2; TIC 96246348: S33 ×2). Rerun with
+  real sectors 40+41 / 33+34: TOI 1172.01 → PLANET CANDIDATE (some checks weak) (FP missed);
+  TIC 96246348 → LIKELY FALSE POSITIVE (FP caught). 0 crashes. 13-planet regression unchanged
+  (0.000σ; results/known_dupfix_2026-11-25.csv).
