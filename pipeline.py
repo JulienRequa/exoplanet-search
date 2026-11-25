@@ -640,9 +640,24 @@ def grazing_check(results):
         return g, None
     return g, float(np.sqrt(max(c_forced - c_free, 0.0)))
 
+def _target_position(lc):
+    """Target RA, Dec (deg) at the middle of this sector: the catalog (TIC, epoch J2000)
+    position moved by the star's proper motion (PMRA, PMDEC in mas/yr from the header).
+    Proper-motion bug fix (2026-11-24): fast nearby stars (GJ 436: 1.2″/yr) move ~1 TESS pixel
+    in 20 years, which made the target look offset from its own light."""
+    ra, dec = float(lc.meta["RA_OBJ"]), float(lc.meta["DEC_OBJ"])
+    pmra, pmdec = lc.meta.get("PMRA"), lc.meta.get("PMDEC")
+    if _missing(pmra) or _missing(pmdec):
+        return ra, dec
+    t_mid = float(np.nanmedian(np.asarray(lc.time.value, dtype=float))) + 2457000.0   # BTJD → BJD
+    years = (t_mid - 2451545.0) / 365.25                                            # since J2000
+    dec_now = dec + float(pmdec) / 3.6e6 * years
+    ra_now = ra + float(pmra) / 3.6e6 * years / np.cos(np.radians(dec))           # PMRA includes cos δ
+    return ra_now, dec_now
+
 def _target_pixel(lc):
-    """Target's CCD (column, row) from its RA/Dec and the WCS of the file's aperture image.
-    None if the file/WCS isn't available."""
+    """Target's CCD (column, row) at the sector's epoch (proper motion applied), from the WCS
+    of the file's aperture image. None if the file/WCS isn't available."""
     try:
         import warnings
         from astropy.io import fits
@@ -650,7 +665,7 @@ def _target_pixel(lc):
         with warnings.catch_warnings(), fits.open(lc.meta["FILENAME"]) as h:
             warnings.simplefilter("ignore")
             ah = h["APERTURE"].header
-            x, y = WCS(ah).all_world2pix(lc.meta["RA_OBJ"], lc.meta["DEC_OBJ"], 0)
+            x, y = WCS(ah).all_world2pix(*_target_position(lc), 0)
             return float(x) + ah["CRVAL1P"], float(y) + ah["CRVAL2P"]
     except Exception:
         return None

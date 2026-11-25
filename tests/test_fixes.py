@@ -152,3 +152,14 @@ def test_timing_fix_recovers_period_across_long_gap():
     popt, errs, *_ = pl.fit_transit(c1, Ph, T0, D, dep)
     T0e, Pe, sT0, sP, notes = pl.per_sector_ephemeris(lcs, popt, errs, D, dep)
     assert not notes and abs(Pe - P) < 1e-4 and abs(Pe - P) < abs(popt[1] - P)
+
+
+def test_proper_motion_moves_target_position():
+    """GJ 436-like star: 1.2″/yr for ~20 yr ≈ 24″ ≈ 1.1 TESS pixels."""
+    lc = lk.LightCurve(time=np.full(10, 1900.0), flux=np.ones(10))       # BTJD 1900 ≈ 2020.2
+    lc.meta.update(RA_OBJ=175.55, DEC_OBJ=26.70, PMRA=896.3, PMDEC=-813.7)
+    ra, dec = pl._target_position(lc)
+    moved = np.hypot((ra - 175.55) * np.cos(np.radians(26.7)), dec - 26.70) * 3600
+    assert 20 < moved < 30
+    lc.meta.update(PMRA=None, PMDEC=None)                                 # no motion → unchanged
+    assert pl._target_position(lc) == (175.55, 26.70)
