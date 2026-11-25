@@ -398,3 +398,7 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   search finds a wrong period even inside the 1× window) and HAT-P-37 b (crowded, same kind).
 - These 4 are explained losses: the search uses only the first sector. Possible fix (NOT
   approved): search all sectors together with the hint.
+
+- Timing fix committed (f8927e5). 13-planet regression (results/known_timingfix_2026-11-24.csv):
+  all unchanged except WASP-33 b (better-cleaned data, as explained above); WASP-62 unchanged.
+  Identical to the prototype's regression (largest difference 0.000σ): the port is faithful.
