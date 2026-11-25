@@ -353,7 +353,19 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
 
     model_x = lambda tt, t0_, per, rp, a, b, q1, q2: transit_model(tt, t0_, per, rp, a, b,
                                                                    *q_to_u(q1, q2))
-    x, pcov_x, _ = _ld_fit(model_x, t, f, guess, bounds, ld_prior, _noise(f))
+    sigma_f = _noise(f)
+    x, pcov_x, chi2 = _ld_fit(model_x, t, f, guess, bounds, ld_prior, sigma_f)
+    # Multi-start (Julien, 2026-11-25): b stuck at 0 is a recurring local minimum
+    # (TOI-2416 b, pi Men c, HATS-28 b; b–a/Rs degeneracy). Also fit from b = 0.6 and keep
+    # whichever solution has the lower χ² (same data, same prior → directly comparable).
+    guess_b = np.array(guess, dtype=float)
+    guess_b[4] = 0.6
+    try:
+        x_b, pcov_b, chi2_b = _ld_fit(model_x, t, f, guess_b, bounds, ld_prior, sigma_f)
+        if chi2_b < chi2:
+            x, pcov_x, chi2 = x_b, pcov_b, chi2_b
+    except (RuntimeError, ValueError):        # second start failed to converge: keep first
+        pass
 
     # Back to u1, u2 (what transit_model and the vetting checks use), errors via Jacobian
     J = np.eye(7)

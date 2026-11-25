@@ -243,3 +243,20 @@ def test_neighbor_depth_accepts_target_eclipse():
 def test_neighbor_depth_rejects_target_when_neighbour_eclipses():
     chi, ok, crit = _nd_case(2, False, sep=2.0)
     assert chi[0] > crit and ok[-1] and chi[-1] <= crit
+
+
+def test_multistart_keeps_lower_chi2(monkeypatch):
+    """Multi-start: when the b = 0.6 start gives a lower χ², that solution is kept."""
+    calls = []
+    real = pl._ld_fit
+    def fake(model_x, t, f, guess, bounds, ld_prior, sigma_f):
+        x, pcov, chi2 = real(model_x, t, f, guess, bounds, ld_prior, sigma_f)
+        calls.append(guess[4])
+        return x, pcov, (chi2 if guess[4] == 0.6 else chi2 + 100.0)   # make start 1 worse
+    monkeypatch.setattr(pl, "_ld_fit", fake)
+    rng = np.random.default_rng(0)
+    t = np.arange(0, 27, 2 / 1440)
+    f = pl.transit_model(t, 1.0, 3.0, 0.1, 10.0, 0.6, 0.4, 0.2) + rng.normal(0, 1e-3, t.size)
+    lc = pl.lk.LightCurve(time=t, flux=f)
+    popt, *_ = pl.fit_transit(lc, 3.0, 1.0, 0.12, 0.01)
+    assert sorted(calls) == [0.3, 0.6] and abs(popt[4] - 0.6) < 0.15
