@@ -139,3 +139,39 @@ DEVELOPMENT ONLY — v1 is not re-scored as an improvement. All runs with period
 - TIC has no log g / radius for 4 FPs (so size/density N/A) — the fallback worked; the TIC
   simply lacks them. TOI 2438.01 (Comment: Jupiter around a WD?) hits Rp/Rs = 1.0, no radius.
 - data/fp_sample_v1.csv: v1 sample TOI periods/depths from pipeline.ipynb's saved output.
+
+## 2026-11-24 — Plan change: improve v2 before the freeze
+- Blind sample LOCKED first (data/blind_v2.csv, 100 FP + 100 CP/KP, random_state=2, from
+  data/toi_2026-11-24.csv; excludes v1 + 13 known hosts by TIC; not run or inspected).
+- Dev extension data/dev_v2.csv (40 FP + 20 CP/KP, random_state=3; excludes blind + v1).
+  Full dev set = 93 targets (13 known + 20 v1 FP + 60 new).
+- Baseline (code 35797d7, no LD prior): planets 28/32 kept, FPs 19/45 caught (42%).
+  4 dev planets lost: 3 to odd/even, 1 to density. 32 testable planets (1 period mismatch).
+- Fixes committed separately: (2a) grazing → profile likelihood; (2b) curve_fit
+  maxfev 20000; (2c) Claret priors (VizieR mirror vizier.cfa.harvard.edu; CDS down).
+- Design notes (not built): docs/design_difference_image.md, design_neighbor_depth.md,
+  design_per_transit_depth.md.
+- Mac note: the "restarts" were automatic log-outs after 5 min idle (setting now off).
+  dev_set.py now saves after every star and resumes.
+
+### Diagnosis plan for the 4 lost planets (before any fix)
+1. Per planet: detected vs catalog period; odd and even depths ± errors; number of transits
+   in each group; sectors used; for the density loss, which numbers drove it. Explain why
+   32 planets were testable, not 33.
+2. Test causes: (a) period alias (½× / 2×); (b) underestimated depth errors (odd_even's
+   white-noise error vs transit-to-transit scatter / red noise); (c) depth differences
+   between sectors (crowding/dilution); (d) detrending distortion near data gaps.
+   Report which cause explains each case.
+3. Any fix: physically justified, checked on simulated planets, and its effect on the 19
+   currently caught FPs reported. No threshold tuning.
+4. Report how many of the 93 dev targets get Claret priors vs fall back to free LD.
+
+### "Ready for blind test" bar (set by Julien, 2026-11-24)
+- ≥ 95% of real dev planets kept, with every loss explained
+- 0 crashes
+- each new check behaves as its design note predicts on simulations
+- FP catch rate clearly above the 42% baseline (no fixed target)
+
+### Push plan (later, not yet)
+After the freeze: set up GitHub login, confirm commits use the no-reply email, and push
+the frozen rules BEFORE running the blind sample (public timestamp). Nothing pushed yet.
