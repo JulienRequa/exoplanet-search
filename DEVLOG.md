@@ -207,3 +207,16 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
   fully covered → FPs: 7/9 still FAIL (loses TOI 1127.01, still caught by 2 other checks, and
   TOI 2554.01, β = 4.5, Comment "stellar variability…" — net 19 → 18 caught);
   planets: HATS-55 b 2.6σ PASS, TOI-2364 b 0.7σ PASS, TOI-2207 b 5.8σ still FAIL (needs (e)).
+- Simulations (sims/oddeven_sim.py; 2 TESS-like sectors, Rp/Rs 0.1, 1000 ppm white noise;
+  red noise = AR(1), 1 h correlation, same amplitude):
+  | case | current FAIL | v3 FAIL |
+  | planet, white (60) | 0% | 0% |
+  | planet, red (60) | **57%** | 0% |
+  | EB odd 15% shallower, white (30) | 100% | 100% |
+  | EB odd 15% shallower, red (30) | 100% | 63% |
+  → the current odd/even rule assumes white noise and falsely fails most planets on stars
+  with correlated noise. v3 fixes this; the EB power lost in red noise is real (the data
+  can't prove a 15% difference there), not a tuning effect.
+- Density: the circular-orbit assumption can bias ρ by [(1 ± e)/√(1 − e²)]³ (0.37–2.7 for
+  e = 0.32; 0.13–8 for e = 0.6), which covers the whole FAIL region (outside 0.5–2×).
+  Baseline: density caught 0 of the 45 testable FPs on its own or otherwise.
