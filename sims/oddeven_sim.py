@@ -1,8 +1,9 @@
-"""Simulated planets / EBs: odd/even FAIL rate, current rule vs odd_even_v3."""
+"""Simulated planets / EBs: odd/even FAIL rate, pipeline.odd_even vs prototype odd_even_v3.
+Run from the repo root: python sims/oddeven_sim.py   (results: sims/oddeven_sim_results_2026-11-24.md)"""
 import sys, io, contextlib
 sys.path.insert(0, ".")  # run from the repo root: python sims/oddeven_sim.py
 import numpy as np, lightkurve as lk, pipeline as pl
-from sims.oddeven_prototypes import odd_even_v3
+from sims.oddeven_prototypes import odd_even_v3  # prototype; pipeline.odd_even is the same algorithm
 
 # two TESS-like sectors (each 2 × 12.5 d orbits with a 1 d gap), 2-min cadence
 cad = 2 / 1440
@@ -29,7 +30,8 @@ def one(seed, red_amp, odd_scale):
     s_new = odd_even_v3(lc, popt)["sigma"]
     return s_old >= 3, (s_new is not None and s_new >= 3)
 
-for label, red_amp, odd_scale, N in [("planet, white noise", 0, 1, 60), ("planet, red noise (1 h, = white)", 1e-3, 1, 60),
-                                     ("EB odd 15% shallower, white", 0, 0.85, 30), ("EB odd 15% shallower, red", 1e-3, 0.85, 30)]:
-    res = np.array([one(s, red_amp, odd_scale) for s in range(N)])
-    print(f"{label:34s} N={N}: FAIL rate current {res[:,0].mean():5.1%}   v3 {res[:,1].mean():5.1%}", flush=True)
+if __name__ == "__main__":
+    for label, red_amp, odd_scale, N in [("planet, white noise", 0, 1, 60), ("planet, red noise (1 h, = white)", 1e-3, 1, 60),
+                                         ("EB odd 15% shallower, white", 0, 0.85, 30), ("EB odd 15% shallower, red", 1e-3, 0.85, 30)]:
+        res = np.array([one(s, red_amp, odd_scale) for s in range(N)])
+        print(f"{label:34s} N={N}: FAIL rate current {res[:,0].mean():5.1%}   v3 {res[:,1].mean():5.1%}", flush=True)

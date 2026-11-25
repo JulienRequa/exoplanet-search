@@ -402,24 +402,69 @@ def get_popt(results):
     """Best-fit parameter list from an analyze_star results dictionary."""
     return [results[name][0] for name in PARAM_NAMES]
 
-def odd_even(lc, popt, plot=False):
-    """Compare depths of odd vs even transits. Returns (depth_odd, depth_even, sigma)."""
+def _single_depths(t, f, t0, P, T14, core_half, shift=0.0):
+    """Depth of each FULLY covered transit window centred at t0 + shift + k·P:
+    rows of (parity, depth, white-noise error, n points). Windows cut by a data gap are
+    skipped (partial transits near gaps are distorted by ramps/trimming/detrending)."""
+    cad = np.median(np.diff(t))
+    n = np.round((t - t0 - shift) / P)
+    dt = t - (t0 + shift + n * P)
+    rows = []
+    for k in np.unique(n[np.abs(dt) <= core_half]):
+        tc = t0 + shift + k * P
+        w = np.abs(t - tc) <= T14 / 2
+        tw = t[w]
+        full = (w.sum() > 1 and tw.min() <= tc - T14 / 2 + 2 * cad
+                and tw.max() >= tc + T14 / 2 - 2 * cad and np.diff(tw).max() < 10 * cad)
+        m = (n == k) & (np.abs(dt) <= core_half)
+        if full and m.sum() >= 3:
+            rows.append((int(k % 2), 1 - f[m].mean(), f[m].std() / np.sqrt(m.sum()), m.sum()))
+    return np.array(rows, dtype=float).reshape(-1, 4)
+
+def odd_even(lc, popt, plot=False, n_null=300, seed=0):
+    """Compare depths of odd vs even transits. Returns (depth_odd, depth_even, sigma);
+    sigma is None if either group has no fully covered transit.
+    v3 (2026-11-24): (1) only fully covered transits are used; (2) the error is inflated by
+    a red-noise factor β measured from ~300 FAKE transits placed out of transit (the spread
+    of fake single-transit depths relative to their white-noise errors; β ≥ 1). The real
+    signal cannot leak into β. Simulations (sims/oddeven_sim.py): false FAILs on planets in
+    red noise 57% → 0%; EBs with 15% depth difference still caught (100% white, 63% red).
+    """
     t = np.asarray(lc.time.value, dtype=float)
     f = np.asarray(lc.flux.value, dtype=float)
     t0, P = popt[0], popt[1]
-    n = np.round((t - t0) / P)                     # transit number for each point
-    phase = t - (t0 + n * P)
-    model = transit_model(t, *popt)
-    core = model < 1 - 0.8 * (1 - model.min())     # deepest part of each transit
+    grid = np.linspace(-0.5, 0.5, 20001)
+    mg = transit_model(t0 + grid * P, *popt)
+    T14 = np.mean(mg < 1) * P                                   # transit duration (days)
+    core_half = 0.5 * np.mean(mg < 1 - 0.8 * (1 - mg.min())) * P  # deepest part, half-width
+
+    per = _single_depths(t, f, t0, P, T14, core_half)
+    if len(per) == 0 or len(np.unique(per[:, 0])) < 2:
+        print("Odd/even: not enough fully covered transits in both groups")
+        return None, None, None
+
+    # red-noise factor from fake transits away from the transit and from phase 0.5
+    rng = np.random.default_rng(seed)
+    frac = T14 / P
+    allowed = np.r_[np.linspace(2 * frac, 0.5 - 2 * frac, 400),
+                    np.linspace(0.5 + 2 * frac, 1 - 2 * frac, 400)]
+    z = []
+    for sh in rng.choice(allowed, n_null) * P:
+        d = _single_depths(t, f, t0, P, T14, core_half, shift=sh)
+        if len(d):
+            z.extend((d[:, 1] - np.median(d[:, 1])) / d[:, 2])
+    beta = max(1.0, float(np.std(z))) if len(z) > 30 else 1.0
 
     depths, errs = [], []
-    for parity in [0, 1]:                          # 0 = even, 1 = odd
-        pts = f[core & (n % 2 == parity)]
-        depths.append(1 - np.mean(pts))
-        errs.append(np.std(pts) / np.sqrt(len(pts)))
+    for parity in [0, 1]:                                       # 0 = even, 1 = odd
+        g = per[per[:, 0] == parity]
+        depths.append(np.sum(g[:, 1] * g[:, 3]) / g[:, 3].sum())   # mean of all core points
+        errs.append(beta * np.sqrt(1 / np.sum(1 / g[:, 2] ** 2)))
     sigma = abs(depths[0] - depths[1]) / np.sqrt(errs[0]**2 + errs[1]**2)
 
     if plot:
+        n = np.round((t - t0) / P)
+        phase = t - (t0 + n * P)
         near = np.abs(phase) < 0.15
         for parity, label in [(0, "even"), (1, "odd")]:
             sel = near & (n % 2 == parity)
@@ -427,8 +472,10 @@ def odd_even(lc, popt, plot=False):
         plt.xlabel("Days from transit center"); plt.ylabel("Normalized flux")
         plt.legend(); plt.show()
 
-    print(f"Even depth = {depths[0]:.5f} ± {errs[0]:.5f}")
-    print(f"Odd depth  = {depths[1]:.5f} ± {errs[1]:.5f}")
+    n_even, n_odd = int((per[:, 0] == 0).sum()), int((per[:, 0] == 1).sum())
+    print(f"Even depth = {depths[0]:.5f} ± {errs[0]:.5f} ({n_even} transits)")
+    print(f"Odd depth  = {depths[1]:.5f} ± {errs[1]:.5f} ({n_odd} transits)")
+    print(f"Red-noise factor β = {beta:.2f}")
     print(f"Difference = {sigma:.1f}σ → " + ("OK, planet-like" if sigma < 3 else "⚠️ suspicious"))
     return depths[1], depths[0], sigma
 
@@ -662,6 +709,7 @@ def vet_star(results, verbose=True):
     rp_jup = popt[2] * float(R) / R_JUP if R else None
 
     checks = [("Detection SNR", "PASS" if snr > 7.1 else "FAIL", f"SNR = {snr:.0f}"),
+              ("Odd/even depths", "N/A", "too few fully covered transits") if oe_sigma is None else
               ("Odd/even depths", "PASS" if oe_sigma < 3 else "FAIL", f"{oe_sigma:.1f}σ difference"),
               ("Secondary eclipse", "FAIL" if (sec_sigma > 3 and sec_ratio > 0.1) else "PASS",
                f"{sec_depth*1e6:.0f} ± {sec_err*1e6:.0f} ppm ({sec_ratio*100:.1f}% of transit)")]

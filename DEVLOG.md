@@ -237,3 +237,15 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
   (b ≈ 0.02 at its bound; shallow transit).
 - Remaining planet losses with 2c: HATS-55 b, TOI-2364 b (odd/even v3 proposal would rescue
   both), TOI-2207 b (needs the ephemeris fix (e)).
+
+## 2026-11-24 — Odd/even v3 implemented (approved)
+- pipeline.odd_even = prototype v3 exactly (β from 300 out-of-transit fake transits, seed 0;
+  only fully covered transits). Pipeline σ = prototype σ to 4 decimals. Simulation script and
+  results kept in sims/ (oddeven_sim.py, oddeven_sim_results_2026-11-24.md).
+- **Honest loss:** TOI 2554.01 (TIC 144043410, v1 FP) was caught only by odd/even (9.5σ);
+  v3 gives 2.2σ (β = 4.5: strong correlated noise; its Comment mentions stellar variability
+  on short timescales). It is now expected to pass as a candidate. We accept this: the old
+  9.5σ came from treating correlated noise as white.
+- **Known limitation:** pi Men's density stays WEAK even with the LD prior (a/Rs ± 5.2):
+  very shallow transit (Rp/Rs ≈ 0.017) and b stuck at 0, so a/Rs (and ρ ∝ (a/Rs)³) are
+  poorly constrained. Density stays a FAIL-capable check (density → WARN withdrawn).

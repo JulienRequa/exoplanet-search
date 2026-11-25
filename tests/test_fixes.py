@@ -91,3 +91,24 @@ def test_ld_prior_lookup():
     assert prior is not None and abs(prior[0] - 0.3075) < 1e-3 and abs(prior[1] - 0.2743) < 1e-3
     assert pl.ld_prior_for({"TEFF": 6000.0, "LOGG": 8.0})[0] is None   # white dwarf: off table
     assert pl.ld_prior_for({"TEFF": None, "LOGG": 4.4})[0] is None
+
+
+def _two_sector_lc(seed, odd_scale=1.0, red_amp=0.0):
+    from sims.oddeven_sim import T, red
+    rng = np.random.default_rng(seed)
+    p = [1.5, 3.7, 0.1, 9.0, 0.3, 0.4, 0.2]
+    m = pl.transit_model(T, *p)
+    if odd_scale != 1:
+        m = np.where(np.round((T - 1.5) / 3.7) % 2 == 1, 1 - odd_scale * (1 - m), m)
+    f = m + rng.normal(0, 1e-3, T.size) + (red(rng, T.size, red_amp) if red_amp else 0)
+    return lk.LightCurve(time=T, flux=f), p
+
+
+def test_odd_even_planet_in_red_noise_passes():      # v3: old rule failed ~57% of these
+    lc, p = _two_sector_lc(1, red_amp=1e-3)
+    assert pl.odd_even(lc, p)[2] < 3
+
+
+def test_odd_even_catches_eb():
+    lc, p = _two_sector_lc(2, odd_scale=0.85)
+    assert pl.odd_even(lc, p)[2] > 3
