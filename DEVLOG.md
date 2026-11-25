@@ -249,3 +249,19 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
 - **Known limitation:** pi Men's density stays WEAK even with the LD prior (a/Rs ± 5.2):
   very shallow transit (Rp/Rs ≈ 0.017) and b stuck at 0, so a/Rs (and ρ ∝ (a/Rs)³) are
   poorly constrained. Density stays a FAIL-capable check (density → WARN withdrawn).
+
+## 2026-11-24 — Designs + simulations for the remaining fixes (none in the pipeline yet)
+- Ephemeris drift (docs/design_ephemeris.md, sims/ephemeris_sim*.py/md): per-sector transit
+  times + straight-line ephemeris. Hard TOI-2207-like case (P 6–9 d, Rp/Rs 0.067, red noise,
+  1100 d gap): sector-2 transits lost — current 40%, per-sector 0%. Easy case: 0% / 0%.
+- Period window (docs/design_period_window.md, sims/period_window_sim*.py/md): pre-registered
+  rule "1× unless alt/1× BLS power > R*", R* from simulated spotted-star planets, valid only if
+  R* < 2 (a genuine alternative gives ≈ 2). Result R* = 3.73 → always use 1× with a hint.
+  Spotted planets kept at 1×: current 75%, proposed 100%. EBs with true P = 2× catalog:
+  caught 70% / 50% (secondary 60% / 90% depth) under both rules. Not tuned on HIP 67522 b.
+- Difference-image centroid prototype (sims/diffimage_sim*.py/md, simulated pixels):
+  first error estimate (per-transit scatter as exact χ²) gave 4–8% null false alarms →
+  fixed (Hotelling T²; or stacked image with empirical pixel noise = method B). Method B in a
+  hard case (Tmag 13, 0.2% dip, 3 transits, PSF 15% wrong): neighbour at 0.5 px detected
+  96–100%, 0.3 px 34%, 0% false alarms; ~10% distance bias from the PSF error. Idealised:
+  no jitter, PRF variation or WCS/Gaia error — the real-data systematic floor is unknown.
