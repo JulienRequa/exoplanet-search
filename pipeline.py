@@ -64,7 +64,13 @@ def download(star_name, n_sectors=1, attempts=3, waits=(30, 90)):
                                           author="SPOC", exptime=120)
             if len(search) == 0:
                 raise ValueError(f"No TESS 2-minute data found for {star_name}")
-            lcs = search[:n_sectors].download_all()
+            # MAST sometimes lists the same sector twice (2026-11-25: TOI 1172.01, sector 40
+            # twice → one sector counted as two). Keep the first product of each sector.
+            seen, keep = set(), []
+            for i, m in enumerate(search.table["mission"]):
+                if str(m) not in seen:
+                    seen.add(str(m)); keep.append(i)
+            lcs = search[keep[:n_sectors]].download_all()
             if lcs is None or len(lcs) == 0:
                 raise ConnectionError(f"Download returned nothing for {star_name}")
             return list(lcs)
@@ -408,6 +414,9 @@ def per_sector_ephemeris(lcs, popt1, errs1, duration, depth, ld_prior=None):
     if len(pts) < 2:
         return t1, P1, errs1[0], errs1[1], notes
     N, t, e = map(np.array, zip(*pts))
+    if len(set(N)) < 2:          # all times on one orbit → no line to fit (guard, 2026-11-25)
+        notes.append("all sector times on one orbit; 1-sector period kept")
+        return t1, P1, errs1[0], errs1[1], notes
     A = np.vstack([np.ones_like(N), N]).T / e[:, None]
     coef, *_ = np.linalg.lstsq(A, t / e, rcond=None)
     cov = np.linalg.inv(A.T @ A)

@@ -127,6 +127,7 @@ def test_download_retries_network_errors_only(monkeypatch):
     class FakeSearch(list):
         def __getitem__(self, s):
             return self
+        table = {"mission": ["TESS Sector 01", "TESS Sector 02"]}
         def download_all(self):
             return ["lc1", "lc2"]
 
@@ -145,6 +146,38 @@ def test_download_retries_network_errors_only(monkeypatch):
     with pytest.raises(ValueError):                                       # no data: not retried
         pl.download("Y", 2)
     assert calls["n"] == 1
+
+
+def test_download_skips_duplicate_sectors(monkeypatch):
+    """MAST can list one sector twice; it must not count as two sectors (TOI 1172.01)."""
+    picked = {}
+
+    class FakeSearch(list):
+        table = {"mission": ["TESS Sector 40", "TESS Sector 40", "TESS Sector 41"]}
+        def __getitem__(self, idx):
+            picked["idx"] = idx
+            return self
+        def download_all(self):
+            return ["lc40", "lc41"]
+
+    monkeypatch.setattr(pl.lk, "search_lightcurve", lambda *a, **k: FakeSearch([1, 2, 3]))
+    pl.download("Z", 2)
+    assert picked["idx"] == [0, 2]
+
+
+def test_ephemeris_one_orbit_does_not_crash(monkeypatch):
+    """Two sector times on the same orbit number → fall back, no singular-matrix crash."""
+    class PG:
+        transit_time_at_max_power = 100.0
+    class C:
+        def to_periodogram(self, **k):
+            return PG()
+    class LC:
+        meta = {"SECTOR": 40}
+    monkeypatch.setattr(pl, "clean", lambda *a, **k: C())
+    monkeypatch.setattr(pl, "fit_transit", lambda *a, **k: ([100.0, 5.0], [1e-3, 1e-4], 0, 0, []))
+    T0, P, sT0, sP, notes = pl.per_sector_ephemeris([LC(), LC()], [100.0, 5.0], [1e-3, 1e-4], 0.1, 0.01)
+    assert (T0, P) == (100.0, 5.0) and "one orbit" in notes[-1]
 
 
 def test_timing_fix_recovers_period_across_long_gap():
