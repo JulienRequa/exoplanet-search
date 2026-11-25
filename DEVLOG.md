@@ -512,3 +512,15 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
     near-threshold cases; no threshold changed.
 - Bar: planets ≥ 95% ✓ (3 losses explained: HATS-64 b, K2-19 b threshold; Kepler-74 b grazing
   degeneracy), 0 crashes ✓, FP catch 53% vs 42% baseline ✓.
+
+## 2026-11-25 — v2 FREEZE
+- Julien: keep multi-start as is, no b-bound guard. Kepler-74 b logged as an explained loss
+  (grazing/non-grazing degeneracy on a faint, noisy star); "degeneracy-aware size check" added
+  to the v3 list.
+- VETTING_RULES.md v2 written (every check, threshold and fit setting; frozen).
+- Final dev results (code e216703, unchanged since except the blind runner and docs):
+  121/124 planets kept (97.6%), 67/127 FPs caught (53%), 0 crashes. Final 13-planet regression:
+  results/known_multistart_2026-11-25.csv (no verdict change).
+- Known limitations: listed in VETTING_RULES.md and PAPER_NOTES (L1–L4 + Kepler-74 b).
+- Added `python dev_set.py blind OUT.csv` (same code path as the dev runs) before the freeze;
+  blind_v2.csv md5 66805c4c73b34c6cef991a2e3fc7d2f1 (unchanged since lock 0217ed9).

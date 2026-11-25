@@ -7,6 +7,8 @@ Every run uses the published / TOI period as period_hint (as the blind test will
 
     python dev_set.py run OUT.csv [STAR ...]     run all (or only the named stars)
     python dev_set.py run3 OUT.csv               dev sample 2 (data/dev_v3.csv) only
+    python dev_set.py blind OUT.csv              blind_v2 (data/blind_v2.csv) — ONLY after the
+                                                 v2 freeze (tag v2-freeze); same code path
     python dev_set.py summary OUT.csv            planets kept, FPs caught, which check caught each
     (summary accepts several CSVs combined: pass a CSV made with pandas.concat)
 """
@@ -22,6 +24,15 @@ def dev3_targets():
     return [(f"TIC {int(r['TIC ID'])}", r["Period (days)"],
              "dev3 FP" if r["group"] == "FP" else "dev3 planet", r["TOI"], r["Comments"])
             for _, r in dev.iterrows()]
+
+
+def blind_targets():
+    """blind_v2 (data/blind_v2.csv, random_state=2, locked at 0217ed9). Run once, after the
+    freeze; results reported as-is."""
+    b = pd.read_csv("data/blind_v2.csv")
+    return [(f"TIC {int(r['TIC ID'])}", r["Period (days)"],
+             "blind FP" if r["group"] == "FP" else "blind planet", r["TOI"], r["Comments"])
+            for _, r in b.iterrows()]
 
 
 def targets():
@@ -64,8 +75,8 @@ def summary(csv):
     if "error" not in d:
         d["error"] = pd.NA
     chk = [c for c in d.columns if c.startswith("check:")]
-    planets = d[d.kind.isin(["known planet", "dev planet", "dev3 planet"])]
-    fps = d[d.kind.isin(["v1 FP", "dev FP", "dev3 FP"])]
+    planets = d[d.kind.isin(["known planet", "dev planet", "dev3 planet", "blind planet"])]
+    fps = d[d.kind.isin(["v1 FP", "dev FP", "dev3 FP", "blind FP"])]
 
     def split(g):
         err = g["error"].notna()
@@ -99,5 +110,7 @@ if __name__ == "__main__":
         run(sys.argv[2], only=sys.argv[3:] or None)
     elif sys.argv[1] == "run3":
         run(sys.argv[2], only=sys.argv[3:] or None, which=dev3_targets)
+    elif sys.argv[1] == "blind":
+        run(sys.argv[2], which=blind_targets)
     else:
         summary(sys.argv[2])
