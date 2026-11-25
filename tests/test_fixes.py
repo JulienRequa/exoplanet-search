@@ -112,3 +112,29 @@ def test_odd_even_planet_in_red_noise_passes():      # v3: old rule failed ~57% 
 def test_odd_even_catches_eb():
     lc, p = _two_sector_lc(2, odd_scale=0.85)
     assert pl.odd_even(lc, p)[2] > 3
+
+
+def test_download_retries_network_errors_only(monkeypatch):
+    calls = {"n": 0}
+
+    class FakeSearch(list):
+        def __getitem__(self, s):
+            return self
+        def download_all(self):
+            return ["lc1", "lc2"]
+
+    def flaky(*a, **k):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise TimeoutError("Timeout limit of 600 exceeded.")
+        return FakeSearch([1, 2])
+
+    monkeypatch.setattr(pl.lk, "search_lightcurve", flaky)
+    monkeypatch.setattr(pl.time, "sleep", lambda s: None)
+    assert pl.download("X", 2) == ["lc1", "lc2"] and calls["n"] == 2     # retried once
+
+    calls["n"] = 0
+    monkeypatch.setattr(pl.lk, "search_lightcurve", lambda *a, **k: (calls.__setitem__("n", calls["n"] + 1), FakeSearch())[1])
+    with pytest.raises(ValueError):                                       # no data: not retried
+        pl.download("Y", 2)
+    assert calls["n"] == 1

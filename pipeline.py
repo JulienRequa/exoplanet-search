@@ -37,13 +37,41 @@ PARAM_NAMES = ["t0", "period", "Rp/Rs", "a/Rs", "b", "u1", "u2"]
 Up to n_sectors of TESS 2-minute SPOC light curves. Always returns a list (one per sector).
 """
 
-def download(star_name, n_sectors=1):
-    """Download up to n_sectors of TESS 2-min SPOC light curves. Returns a list."""
-    search = lk.search_lightcurve(star_name, mission="TESS",
-                                  author="SPOC", exptime=120)
-    if len(search) == 0:
-        raise ValueError(f"No TESS 2-minute data found for {star_name}")
-    return list(search[:n_sectors].download_all())
+def _network_errors():
+    """Exception types that mean 'the network/MAST failed', worth retrying."""
+    errs = [TimeoutError, ConnectionError]
+    try:
+        import requests
+        errs.append(requests.exceptions.RequestException)
+    except ImportError:
+        pass
+    try:
+        from astroquery.exceptions import RemoteServiceError
+        errs.append(RemoteServiceError)
+    except ImportError:
+        pass
+    return tuple(errs)
+
+def download(star_name, n_sectors=1, attempts=3, waits=(30, 90)):
+    """Download up to n_sectors of TESS 2-min SPOC light curves. Returns a list.
+    Network failures (timeouts, dropped connections, MAST errors, empty downloads) are
+    retried up to `attempts` times, waiting `waits` seconds in between. "No 2-minute data"
+    is an answer, not a failure, and is never retried. (2026-11-24; data unchanged.)
+    """
+    for attempt in range(attempts):
+        try:
+            search = lk.search_lightcurve(star_name, mission="TESS",
+                                          author="SPOC", exptime=120)
+            if len(search) == 0:
+                raise ValueError(f"No TESS 2-minute data found for {star_name}")
+            lcs = search[:n_sectors].download_all()
+            if lcs is None or len(lcs) == 0:
+                raise ConnectionError(f"Download returned nothing for {star_name}")
+            return list(lcs)
+        except _network_errors():
+            if attempt == attempts - 1:
+                raise
+            time.sleep(waits[min(attempt, len(waits) - 1)])
 
 # Header keyword → TIC catalog column (same quantity, same units: K, cgs dex, solar radii)
 TIC_COLUMNS = {"TEFF": "Teff", "LOGG": "logg", "RADIUS": "rad"}
