@@ -69,6 +69,16 @@ prototype simulation sims/ephemeris_proto_sim.py (to be committed with the fix).
 **Status.** prototype; enters v2 only if the criteria are met.
 **Section.** methods.
 
+### M5. Proper motion must be applied before comparing centroids with the target position
+**Finding.** Using the catalog (J2000) position for fast-moving nearby stars makes the
+target look offset from its own light, so the centroid check wrongly blames a neighbour.
+**Numbers.** GJ 436 (1.21″/yr): moved 1.16 px by TESS sector 22; centroid − J2000 position
+1.18 px vs centroid − propagated position 0.15 px. LTT 1445 A: 0.65 → 0.36 px. WASP-18
+(control): 0.03 px of motion.
+**Evidence.** DEVLOG 2026-11-24 (night); results/devset_v3sample_2026-11-24.csv.
+**Status.** bug found in dev sample 2; fix pending approval.
+**Section.** methods (+ a caution for other TESS vetting pipelines).
+
 ---
 
 ## Results
@@ -81,6 +91,15 @@ deep, short-period TESS false positives are caught.
 The v2 blind number will replace these.
 **Evidence.** results/fp_test_v1.csv; results/devset93_*_2026-11-24.csv; dev_set.py summary.
 **Section.** results.
+
+### R2. Timing drift is the main cause of false odd/even rejections in multi-year data
+**Finding.** In dev sample 2, most real planets rejected by odd/even were bright, clean hot
+Jupiters whose sectors are years apart; a slightly wrong period misaligns later transits.
+**Numbers.** 16 planets wrongly rejected; per-sector ephemeris rescues 8 (odd/even 3.3–9.7σ →
+PASS), e.g. HATS-59 b (period 0.06% off). Remaining: 5 period-search, 2 proper-motion bug, 1 open.
+**Evidence.** results/devset_v3sample_2026-11-24.csv;
+results/devset_v3sample_lost_rerun_timingfix_2026-11-24.csv; DEVLOG.
+**Section.** results (development) / methods motivation.
 
 ---
 

@@ -347,3 +347,26 @@ was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: th
   later-sector transits were likely not masked correctly during detrending (to confirm by
   checking the 1-sector ephemeris drift). Rp/Rs 0.1026 → 0.1091 is the ephemeris fix improving
   the cleaned data. Published-value comparison still to do as a check only.
+
+## 2026-11-24 (night) — dev sample 2 (dev_v3, 200 stars) results — FOR FINDING PROBLEMS
+Code: odd/even v3 + Claret priors (549e92e), no timing fix, max-power period window.
+- Planets: 80/94 testable kept (85%); 3 no data, 3 period mismatches. FPs: 42/81 caught (52%);
+  17 no data, 1 error (TIC 161223358, to check), 1 period mismatch.
+- Combined with the 93-star set: planets 110/126 (87%); FPs 63/127 (≈50%).
+- 16 dev_v3 planets ended LIKELY FALSE POSITIVE (14 testable + 2 period mismatches). Rerun with the
+  timing-fix prototype (window rule unchanged): **8 rescued** — WASP-138 b, WASP-193 b, CoRoT-12 b,
+  WASP-133 b, HAT-P-1 b, TOI-1921, HATS-59 b, TOI-1420 (odd/even 3.3–9.7σ → PASS; fitted periods
+  had been slightly off, e.g. HATS-59 b by 0.06%, so years-apart sectors were misaligned).
+  (results/devset_v3sample_lost_rerun_timingfix_2026-11-24.csv)
+- Still lost after the timing fix (8):
+  * Period search (5): Kepler-44 b (2× window), TOI-4306 (2×), TOI-2266 (½×), K2-415 b and
+    HAT-P-37 b (wrong period at the edge of the 1× window → weak/odd fit). The window problem
+    affects quiet stars too, not only spotted ones.
+  * Centroid, BUG (2): GJ 436 b and LTT 1445 A b — the target position is the catalog J2000
+    position without proper motion. GJ 436 moved 1.16 px by sector 22: centroid − J2000 position
+    1.18 px, centroid − moved position 0.15 px. LTT 1445 A moved 0.42 px (centroid − J2000 0.65 px
+    → 0.36 px after motion). Control WASP-18: 0.03 px. Fix = propagate RA/Dec with PMRA/PMDEC
+    to the sector's epoch (needs approval: it changes a vetting check).
+  * Unexplained (1): TOI-3023 b (odd/even 3.2σ) — diagnose like HATS-55 b.
+- Projection (not measured): timing fix + motion fix → combined planets ≈ 120/126 (95%);
+  plus an always-1× window ≈ 97–98%. The timing fix's effect on FPs is NOT measured yet.
