@@ -435,3 +435,19 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   13-planet regression identical (0.000σ) — expected: the regression runs without a hint.
   (results/check_pmfix_2026-11-24.csv, check_window_2026-11-24.csv,
   known_pmfix_2026-11-24.csv, known_window_2026-11-24.csv)
+
+## 2026-11-24 (night) — Simulation results (no pipeline changes)
+- Gaia neighbour-depth (sims/neighbor_depth_sim.py; model-based centroid prediction incl.
+  aperture truncation): planets on target FAIL 0% in normal, crowded (HATS-55-like) and
+  wrong-PSF cases (WEAK 0.5% in crowded). Eclipsing neighbour caught: 0.3 px 0%, 0.5 px
+  10–22%, 1.0 px 86–94%, 2.0 px 96–100%. → Criteria met in simulation; closes the ~1 px gap,
+  not the < 0.5 px one. Must still be checked on real known planets.
+- Within-sector odd/even (sims/oddeven_within_sector_sim.py): crowded-field planets falsely
+  failed 10% (v3) → 0%; EBs caught 100% / 100%. → Condition met. Building it was blocked by
+  Claude Code's auto-mode safety check (vetting-rule change) → asked Julien to confirm.
+- Multi-sector search (sims/multisector_search_sim.py): (1) simulated planets were not faint
+  enough (single-sector search also 100%) → rerunning with fainter planets; (2) noise-only stars
+  falsely passed the detection check 8% (2 sectors) / 18% (4 sectors) vs 0% for the
+  single-sector search → FAILS the "FPs must not get easier to pass" criterion as designed
+  (more data + finer grid = more chances for noise to look like a transit). Would need a
+  stricter detection threshold (a rule change).

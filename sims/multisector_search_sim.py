@@ -12,6 +12,7 @@ cad = 2 / 1440
 def sector(t0):
     return np.r_[np.arange(t0, t0 + 12.5, cad), np.arange(t0 + 13.5, t0 + 26, cad)]
 STARTS = {2: [0.0, 700.0], 4: [0.0, 27.0, 700.0, 727.0]}
+FAINT_K = (0.045, 0.065) if len(sys.argv) < 2 else tuple(map(float, sys.argv[1].split(",")))  # Rp/Rs range
 
 def make(seed, kind, n_sec):
     rng = np.random.default_rng(seed)
@@ -21,7 +22,7 @@ def make(seed, kind, n_sec):
     for s0 in STARTS[n_sec]:
         T = sector(s0)
         if kind == "planet":
-            m = pl.transit_model(T, t0, P, rng.uniform(0.045, 0.065), a, rng.uniform(0, 0.6), 0.4, 0.2)
+            m = pl.transit_model(T, t0, P, rng.uniform(FAINT_K[0], FAINT_K[1]), a, rng.uniform(0, 0.6), 0.4, 0.2)
         elif kind == "eb":                                 # true period 2× catalog, secondary 60%
             prim = pl.transit_model(T, t0, 2 * P, 0.15, 1.6 * a, 0.3, 0.4, 0.2)
             sec = pl.transit_model(T, t0 + P, 2 * P, 0.15, 1.6 * a, 0.3, 0.4, 0.2)
