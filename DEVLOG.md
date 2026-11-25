@@ -312,3 +312,16 @@ was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: th
 - Pushed v2-vetting at dce7e0b (2026-11-24 17:56 PST): public record that blind_v2 was locked
   (0217ed9) before the v2 improvements. Next pushes only at: freeze (tag v2-freeze), right after
   the blind run, before hunting — each with Julien's OK.
+
+## 2026-11-24 (evening) — Dev set (93) with odd/even v3 (commit 927087a + priors)
+- Planets: 30/32 kept (94%) — up from 29/32. Rescued: TOI-2364 b (partial transit dropped).
+  Still lost: TOI-2207 b (ephemeris drift → per-sector ephemeris fix) and HATS-55 b
+  (odd/even 3.2σ; β ≈ 1.15 so red noise is small; likely cause (c): sector 61 is 29% deeper
+  than sector 34 in a very crowded aperture, and with a partial transit dropped the odd and
+  even groups are no longer balanced across sectors, so the sector depth difference leaks into
+  odd/even). Possible physical fix for discussion: compare odd vs even within each sector.
+  The prototype's 2.6σ for HATS-55 b was measured with the free-LD fit; with priors it is 3.2σ.
+- FPs: 21/46 caught (46%), 12 of 60 no 2-min data, 2 period mismatches. Only change vs the
+  priors run: TOI 2554.01 caught → missed (odd/even 9.6σ → 2.2σ), as predicted.
+- Two planets (TOI 255.01, TOI 115.01) first hit MAST download timeouts (600 s) while several
+  jobs ran at once; rerun → both PLANET CANDIDATE. Not code crashes; network.
