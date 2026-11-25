@@ -337,3 +337,13 @@ was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: th
   but the fit moved to a different solution (Rp/Rs 0.1026 → 0.1091, b 0.15 → 0.10) — a fit with
   more than one minimum on a pulsating (δ Scuti) host, like pi Men's fragility. Comparison with
   the published value pending (NASA Exoplanet Archive returned a bot check tonight).
+
+## 2026-11-24 (evening) — WASP-33 b and WASP-62 resolved
+- WASP-62: current-code regression row rerun after the MAST timeout → PLANET CANDIDATE.
+- WASP-33 b multi-start (20 starts) on each cleaned light curve: the pipeline's own solution is
+  the lowest-χ² one in BOTH (16/20 starts each). So not a local-minimum problem; multi-start
+  not needed. The two versions have the same points (12 581 near transit) and noise (~480 ppm),
+  and the prototype's fits 2.6× better (χ² 110 540 vs 283 659): with the old ephemeris some
+  later-sector transits were likely not masked correctly during detrending (to confirm by
+  checking the 1-sector ephemeris drift). Rp/Rs 0.1026 → 0.1091 is the ephemeris fix improving
+  the cleaned data. Published-value comparison still to do as a check only.
