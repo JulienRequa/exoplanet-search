@@ -183,3 +183,30 @@ def test_within_sector_odd_even_still_catches_eb():
     lc, p = _two_sector_lc(2, odd_scale=0.85)
     lc["sector"] = np.where(np.asarray(lc.time.value) < 40, 1, 2)
     assert pl.odd_even(lc, p)[2] > 3
+
+
+def _nd_case(seed, ecl_is_target, sep=2.0, dmag=2.0):
+    """Simulated scene from sims/neighbor_depth_sim.py, analysed with pipeline._nd_* functions."""
+    import sims.neighbor_depth_sim as nds
+    rng = np.random.default_rng(seed)
+    a = rng.uniform(0, 2 * np.pi)
+    stars = nds.scene(rng, False, extra=lambda t: (t[0] + sep * np.cos(a), t[1] + sep * np.sin(a), 12.0 + dmag))
+    ap = nds.aperture(stars, nds.SIG_TRUE)
+    ecl = 0 if ecl_is_target else len(stars) - 1
+    d_obs, delta = nds.observe(rng, stars, ap, ecl, 0.005)
+    null = np.array([nds.observe(rng, stars, ap, 0, 0.0)[1] for _ in range(30)])
+    sx, sy = null.std(0, ddof=1)
+    # pipeline normalises the PSF analytically; use magnitudes as fluxes (relative scale only)
+    chi, ok = pl._nd_chi2(pl._nd_terms(stars, ap), delta, sx, sy, d_obs)
+    from scipy.stats import chi2 as c2
+    return chi, ok, c2.isf(0.0027, 2)
+
+
+def test_neighbor_depth_accepts_target_eclipse():
+    chi, ok, crit = _nd_case(1, True)
+    assert ok[0] and chi[0] <= crit
+
+
+def test_neighbor_depth_rejects_target_when_neighbour_eclipses():
+    chi, ok, crit = _nd_case(2, False, sep=2.0)
+    assert chi[0] > crit and ok[-1] and chi[-1] <= crit

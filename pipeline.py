@@ -789,6 +789,109 @@ def centroid_check(results, n_null=200, seed=0, window=721):
     return {"sigma": z, "D2": D2, "dof": dof, "dist": dist, "dist_err": dist_err,
             "sectors": sectors}
 
+# --- Gaia neighbour-depth check (2026-11-24, approved; design: docs/design_neighbor_depth.md) --
+PSF_SIGMA_PX = 0.75          # Gaussian approximation to the TESS PSF (simulated: ±15% is harmless)
+ND_RADIUS_PX = 2.5           # neighbours considered (1 TESS pixel = 21″)
+ND_SYS_FRAC = 0.10           # model systematic: 10% of the predicted shift, plus a small floor
+ND_SYS_FLOOR = 0.0005        # px
+
+def _nd_terms(stars, ap, sig=PSF_SIGMA_PX):
+    """stars: rows (x, y, Tmag) in aperture-image pixel coordinates; ap: boolean aperture mask.
+    Returns per star (S_j, Sx_j, Sy_j): its flux inside the aperture and flux-weighted coords."""
+    yy, xx = np.mgrid[0:ap.shape[0], 0:ap.shape[1]].astype(float)
+    out = []
+    for x, y, m in stars:
+        img = 10 ** (-0.4 * m) * np.exp(-((xx - x) ** 2 + (yy - y) ** 2) / (2 * sig ** 2)) \
+              / (2 * np.pi * sig ** 2) * ap
+        out.append((img.sum(), (img * xx).sum(), (img * yy).sum()))
+    return np.array(out)
+
+def _nd_chi2(terms, delta, sx, sy, d_obs):
+    """For each star j: can it make the observed (aperture) depth d_obs, and how well does the
+    centroid shift it predicts match the measured shift delta = (Δx, Δy) ± (sx, sy)?
+    Returns (chi2 per star, feasible per star). Predicted shift = moment centroid with star j
+    dimmed by d_j = d_obs·S/S_j minus the undimmed centroid (aperture truncation included)."""
+    S, Sx, Sy = terms.sum(0)
+    chi, ok = [], []
+    for Sj, Sxj, Syj in terms:
+        dj = d_obs * S / Sj if Sj > 0 else np.inf
+        if dj > 1:
+            chi.append(np.inf); ok.append(False); continue
+        pred = np.array([(Sx - dj * Sxj) / (S - dj * Sj) - Sx / S,
+                         (Sy - dj * Syj) / (S - dj * Sj) - Sy / S])
+        sys2 = (ND_SYS_FRAC * np.abs(pred)) ** 2 + ND_SYS_FLOOR ** 2
+        chi.append(float(np.sum((np.asarray(delta) - pred) ** 2 / (np.array([sx, sy]) ** 2 + sys2))))
+        ok.append(True)
+    return np.array(chi), np.array(ok)
+
+def neighbor_depth_check(results, cen):
+    """Which star is eclipsing? Hypotheses: the target or each catalogue neighbour within
+    ND_RADIUS_PX (TIC, Gaia-based, moved to each sector's epoch). Uses the per-sector centroid
+    shifts measured by centroid_check. FAIL if the target hypothesis is rejected (χ², p < 0.27%)
+    AND a neighbour fits; WEAK if the target is rejected and none fits; else PASS.
+    Simulation (sims/neighbor_depth_sim.py): planets FAIL 0% (normal, crowded, PSF 15% off);
+    eclipsing neighbours caught 86–94% at 1 px, 96–100% at 2 px, 10–22% at 0.5 px.
+    Returns dict, or None if centroids / catalogue / WCS are unavailable."""
+    if not cen or not cen.get("sectors"):
+        return None
+    import warnings
+    from scipy.stats import chi2 as chi2_dist
+    from astropy.io import fits
+    from astropy.wcs import WCS
+    popt = get_popt(results)
+    depth = 1 - transit_model(np.array([popt[0]]), *popt)[0]          # crowding-corrected depth
+    lc0 = results["raw_lcs"][0]
+    try:
+        from astroquery.mast import Catalogs
+        q = Catalogs.query_region(f"{lc0.meta['RA_OBJ']} {lc0.meta['DEC_OBJ']}",
+                                  radius=(ND_RADIUS_PX + 0.5) * 21 / 3600, catalog="TIC")
+    except Exception:
+        return None
+    q = q[[str(d) not in ("ARTIFACT", "DUPLICATE", "SPLIT") for d in q["disposition"]]]
+    q = q[np.isfinite(np.asarray(q["Tmag"], dtype=float))]
+    tic = lc0.meta.get("TICID")
+    is_t = np.array([int(i) == int(tic) for i in q["ID"]]) if tic else np.zeros(len(q), bool)
+    if not is_t.any():
+        is_t = np.asarray(q["dstArcSec"]) == np.min(q["dstArcSec"])
+    order = np.r_[np.where(is_t)[0][:1], np.where(~is_t)[0]]                 # target first
+    q = q[order]
+    tmag_t = float(q["Tmag"][0])
+    q = q[np.asarray(q["Tmag"], dtype=float) <= tmag_t + 7.5]                 # fainter can't matter
+    pm = lambda c: np.nan_to_num(np.asarray(q[c], dtype=float))
+    chi_tot, ok_tot, n_used = np.zeros(len(q)), np.ones(len(q), bool), 0
+    for s in cen["sectors"]:
+        lc = next((l for l in results["raw_lcs"] if l.meta.get("SECTOR") == s["sector"]), None)
+        if lc is None:
+            continue
+        try:
+            with warnings.catch_warnings(), fits.open(lc.meta["FILENAME"]) as h:
+                warnings.simplefilter("ignore")
+                ah = h["APERTURE"].header
+                ap = (h["APERTURE"].data & 2) > 0
+                w = WCS(ah)
+        except Exception:
+            continue
+        years = (float(np.nanmedian(np.asarray(lc.time.value, float))) + 2457000.0 - 2451545.0) / 365.25
+        dec = np.asarray(q["dec"], float) + pm("pmDEC") / 3.6e6 * years
+        ra = np.asarray(q["ra"], float) + pm("pmRA") / 3.6e6 * years / np.cos(np.radians(dec))
+        x, y = w.all_world2pix(ra, dec, 0)
+        stars = list(zip(x, y, np.asarray(q["Tmag"], float)))
+        crowd = lc.meta.get("CROWDSAP")
+        d_obs = depth * (float(crowd) if not _missing(crowd) else 1.0)       # raw-aperture depth
+        chi, ok = _nd_chi2(_nd_terms(stars, ap), (s["dx"], s["dy"]), s["sx"], s["sy"], d_obs)
+        chi_tot += chi; ok_tot &= ok; n_used += 1
+    if n_used == 0:
+        return None
+    crit = chi2_dist.isf(0.0027, 2 * n_used)
+    fits_ok = [j for j in range(1, len(q)) if ok_tot[j] and chi_tot[j] <= crit]
+    rejected = chi_tot[0] > crit
+    best = min(fits_ok, key=lambda j: chi_tot[j]) if fits_ok else None
+    return {"status": "FAIL" if (rejected and fits_ok) else ("WEAK" if rejected else "PASS"),
+            "chi2_target": float(chi_tot[0]), "crit": float(crit), "n_neighbours": len(q) - 1,
+            "n_possible": int(ok_tot[1:].sum()),
+            "best_neighbour": None if best is None else
+            (int(q["ID"][best]), float(q["dstArcSec"][best]), float(q["Tmag"][best]) - tmag_t)}
+
 """---
 # 7. Vetting report
 Runs every check silently and prints one report card. Planet size catches star-sized
@@ -864,6 +967,17 @@ def vet_star(results, verbose=True):
             status = "PASS"
         checks.append(("Centroid", status, detail))
 
+    nd = neighbor_depth_check(results, cen)
+    if nd is None:
+        checks.append(("Neighbor depth", "N/A", "no centroids / catalogue / WCS"))
+    else:
+        detail = (f"target χ² {nd['chi2_target']:.1f} (limit {nd['crit']:.1f}); "
+                  f"{nd['n_possible']}/{nd['n_neighbours']} neighbours bright enough")
+        if nd["best_neighbour"]:
+            tid, sep, dmag = nd["best_neighbour"]
+            detail += f"; fits TIC {tid} ({sep:.0f}″, Δmag {dmag:.1f})"
+        checks.append(("Neighbor depth", nd["status"], detail))
+
     statuses = [c[1] for c in checks]
     n_run = sum(s in ("PASS", "FAIL", "WARN") for s in statuses)  # WEAK / N/A don't count
     n_pass = statuses.count("PASS")
@@ -891,7 +1005,7 @@ def vet_star(results, verbose=True):
         print(f"VERDICT: {verdict} ({n_pass}/{n_run} checks passed)")
 
     report = {"checks": checks, "snr": snr, "rp_jup": rp_jup, "verdict": verdict,
-              "centroid": cen,
+              "centroid": cen, "neighbor_depth": nd,
               "n_pass": n_pass, "n_run": n_run}
     results["vetting"] = report
     return report
