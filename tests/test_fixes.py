@@ -84,3 +84,10 @@ def test_ld_prior_pulls_fit():
     P, T0, D, dep = pl.search(lc)
     popt, *_ = pl.fit_transit(lc, P, T0, D, dep, ld_prior=(0.6, 0.1, 0.02))
     assert abs(popt[5] - 0.6) < 0.06 and abs(popt[6] - 0.1) < 0.06
+
+
+def test_ld_prior_lookup():
+    prior, src = pl.ld_prior_for({"TEFF": 5750.0, "LOGG": 4.5})     # exact grid point
+    assert prior is not None and abs(prior[0] - 0.3075) < 1e-3 and abs(prior[1] - 0.2743) < 1e-3
+    assert pl.ld_prior_for({"TEFF": 6000.0, "LOGG": 8.0})[0] is None   # white dwarf: off table
+    assert pl.ld_prior_for({"TEFF": None, "LOGG": 4.4})[0] is None

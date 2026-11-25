@@ -222,11 +222,11 @@ def ld_prior_for(star_info, sigma=LD_PRIOR_SIGMA):
         files = sorted(glob.glob(os.path.join(here, LD_TABLE_GLOB)))
         if not files:
             return None, "free (no LD table)"
-        tab = pd.read_csv(files[-1])
+        tab = pd.read_csv(files[-1], comment="#")
         _ld_interp = (LinearNDInterpolator(tab[["Teff", "logg"]].values, tab[["u1", "u2"]].values),
                       os.path.basename(files[-1]))
     interp, name = _ld_interp
-    u1, u2 = interp(teff, logg)[0]
+    u1, u2 = np.ravel(interp(teff, logg))[:2]
     if not (np.isfinite(u1) and np.isfinite(u2)):
         return None, "free (outside LD table)"
     return (float(u1), float(u2), sigma), f"prior {u1:.3f}, {u2:.3f} ± {sigma} ({name})"
