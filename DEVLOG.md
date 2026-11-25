@@ -416,3 +416,13 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   (2) always-1× window + regression; (3) simulations: within-sector odd/even, multi-sector
   search, Gaia neighbour-depth; (4) pre-cache light curves for blind_v2 + hunting targets
   (download only; disk check first); plus a TOI-3023 b diagnosis.
+
+## 2026-11-24 (night) — TOI-3023 b diagnosis (newest code: timing + motion + 1× window)
+- Odd/even 3.2σ (even 8678 vs odd 8253 ppm, 6 + 6 full transits, β = 1.02). Sectors 64 and 65
+  are consecutive (no timing drift). Per sector: S64 even 8662 ± 59 / odd 8538 ± 334 (agree);
+  S65 even 8709 ± 137 / odd 8111 ± 130 → the difference is INSIDE sector 65 (2 even vs 4 odd
+  transits). Sector means 8621 vs 8310 ppm (CROWDSAP 0.937 vs 0.915).
+- Conclusion: borderline (3.2σ) and not caused by sector crowding, so within-sector odd/even
+  would not rescue it. Most likely a chance fluctuation or systematics in a few S65 transits;
+  ~1 such borderline case is expected by chance among ~130 planets at a 3σ threshold.
+  Logged as an explained, unfixable loss (no rule change).
