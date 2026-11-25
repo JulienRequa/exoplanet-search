@@ -170,3 +170,16 @@ def test_proper_motion_moves_target_position():
     assert 20 < moved < 30
     lc.meta.update(PMRA=None, PMDEC=None)                                 # no motion → unchanged
     assert pl._target_position(lc) == (175.55, 26.70)
+
+
+def test_within_sector_odd_even_equals_v3_for_one_sector():
+    lc, p = _two_sector_lc(3, odd_scale=0.9)
+    one = lk.LightCurve(time=lc.time, flux=lc.flux)                     # no sector column
+    tagged = lk.LightCurve(time=lc.time, flux=lc.flux); tagged["sector"] = np.full(len(lc), 7)
+    assert abs(pl.odd_even(one, p)[2] - pl.odd_even(tagged, p)[2]) < 1e-12
+
+
+def test_within_sector_odd_even_still_catches_eb():
+    lc, p = _two_sector_lc(2, odd_scale=0.85)
+    lc["sector"] = np.where(np.asarray(lc.time.value) < 40, 1, 2)
+    assert pl.odd_even(lc, p)[2] > 3

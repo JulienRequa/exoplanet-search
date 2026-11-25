@@ -151,7 +151,11 @@ def clean(lc, window_length=721, period=None, t0=None, duration=None, trim=0.25)
 
 def clean_all(lcs, period=None, t0=None, duration=None):
     """Clean each sector separately, then join into one light curve."""
-    cleaned = [clean(lc, period=period, t0=t0, duration=duration) for lc in lcs]
+    cleaned = []
+    for lc in lcs:
+        c = clean(lc, period=period, t0=t0, duration=duration)
+        c["sector"] = np.full(len(c), int(lc.meta.get("SECTOR") or len(cleaned)))  # for odd/even
+        cleaned.append(c)
     return lk.LightCurveCollection(cleaned).stitch()
 
 """---
@@ -522,12 +526,38 @@ def odd_even(lc, popt, plot=False, n_null=300, seed=0):
             z.extend((d[:, 1] - np.median(d[:, 1])) / d[:, 2])
     beta = max(1.0, float(np.std(z))) if len(z) > 30 else 1.0
 
-    depths, errs = [], []
-    for parity in [0, 1]:                                       # 0 = even, 1 = odd
-        g = per[per[:, 0] == parity]
-        depths.append(np.sum(g[:, 1] * g[:, 3]) / g[:, 3].sum())   # mean of all core points
-        errs.append(beta * np.sqrt(1 / np.sum(1 / g[:, 2] ** 2)))
-    sigma = abs(depths[0] - depths[1]) / np.sqrt(errs[0]**2 + errs[1]**2)
+    def group(rows):
+        dep, err = [], []
+        for parity in [0, 1]:                                   # 0 = even, 1 = odd
+            g = rows[rows[:, 0] == parity]
+            dep.append(np.sum(g[:, 1] * g[:, 3]) / g[:, 3].sum())   # mean of all core points
+            err.append(beta * np.sqrt(1 / np.sum(1 / g[:, 2] ** 2)))
+        return dep, err
+
+    depths, errs = group(per)                                   # overall (for the printout)
+
+    # Within-sector comparison (2026-11-24, approved): crowding corrections differ between
+    # sectors, so transit depths can differ by sector; if odd and even transits come unequally
+    # from the sectors, that looks like an odd/even difference. Compare odd vs even INSIDE each
+    # sector, then combine (inverse-variance). One sector → identical to v3.
+    # Simulation (sims/oddeven_within_sector_sim.py): crowded-field planets falsely failed
+    # 10% → 0%; EBs still caught 100%.
+    sectors = (np.asarray(lc["sector"]) if "sector" in lc.colnames
+               else np.zeros(len(t), dtype=int))
+    num = den = 0.0
+    for s in np.unique(sectors):
+        m = sectors == s
+        ps = _single_depths(t[m], f[m], t0, P, T14, core_half)
+        if len(ps) == 0 or len(np.unique(ps[:, 0])) < 2:
+            continue                                            # needs both parities
+        d, e = group(ps)
+        e2 = e[0] ** 2 + e[1] ** 2
+        num += (d[0] - d[1]) / e2
+        den += 1 / e2
+    if den == 0:
+        print("Odd/even: no sector has fully covered odd AND even transits")
+        return depths[1], depths[0], None
+    sigma = abs(num / den) * np.sqrt(den)
 
     if plot:
         n = np.round((t - t0) / P)
