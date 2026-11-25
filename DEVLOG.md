@@ -386,3 +386,15 @@ Multi-start fitting: dropped (WASP-33 showed no local-minimum problem).
 Hunting scope: the ~2,900 open PCs inside v2's tested range (P 0.5–10 d, depth > 2000 ppm);
 the rest wait for the sibling/shallow work with injection tests.
 Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag v2-freeze) → blind_v2.
+
+## 2026-11-24 (night) — Period window: evidence for the v2 decision
+- Ordinary-star simulation (sims/period_window_ordinary_sim.py; 100 planets, Rp/Rs 0.05–0.10,
+  1000–4000 ppm white noise; 30+30 EBs at 2× catalog): final period within 1% — current 100%,
+  always-1× 100%; EBs caught 100% / 100% under both. → Criteria met (no harm), but the idealised
+  simulation does NOT reproduce the dev_v3 failures (real systematics/crowding missing).
+- Real dev_v3 planets with period-search problems, rerun with always-1× + timing fix
+  (results/devset_v3sample_window_rerun_2026-11-24.csv): rescued LTT 1445 A b and TOI-2266;
+  still lost Kepler-44 b, TOI-4306, K2-415 b (SNR 2–3: too faint to find in ONE sector, the
+  search finds a wrong period even inside the 1× window) and HAT-P-37 b (crowded, same kind).
+- These 4 are explained losses: the search uses only the first sector. Possible fix (NOT
+  approved): search all sectors together with the hint.
