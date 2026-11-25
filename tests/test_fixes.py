@@ -35,11 +35,18 @@ def test_deep_eclipse_does_not_crash():      # bug 1: guess sqrt(depth) > old 0.
     assert 0.4 < r["Rp/Rs"][0] < 0.6
 
 
-@pytest.mark.parametrize("hint, choice", [(3.0, "1×"), (6.0, "½×"), (1.5, "2×")])
-def test_period_hint_picks_right_multiple(hint, choice):   # bug 3
+@pytest.mark.parametrize("hint", [3.0, 3.05])
+def test_period_hint_finds_planet(hint):                  # bug 3
     lc = fake_lc([1.3, 3.0, 0.1, 9.0, 0.3, 0.4, 0.2], 1e-3)
     P, T0, D, dep, ch = pl.search_near(lc, hint)
-    assert abs(float(P.value) - 3.0) < 0.01 and ch == choice
+    assert abs(float(P.value) - 3.0) < 0.01 and ch == "1×"
+
+
+def test_period_hint_always_1x():                         # v2 rule: never switch to ½× / 2×
+    lc = fake_lc([1.3, 3.0, 0.1, 9.0, 0.3, 0.4, 0.2], 1e-3)
+    for hint in (6.0, 1.5):
+        P, T0, D, dep, ch = pl.search_near(lc, hint)
+        assert ch == "1×" and abs(float(P.value) - hint) / hint < 0.021
 
 
 def test_star_info_header_used_and_nan_is_missing(monkeypatch):   # bug 2

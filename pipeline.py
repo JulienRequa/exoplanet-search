@@ -174,13 +174,16 @@ def search(lc, min_period=0.5, max_period=10, n_periods=10000, plot=False):
             pg.duration_at_max_power, pg.depth_at_max_power)
 
 def search_near(lc, period_hint, tol=0.02, n_periods=2000):
-    """BLS search restricted to ±tol around 1×, ½× and 2× a known period (e.g. a TOI's).
-    Windows longer than half the data span are skipped. The window with the highest BLS
-    power wins. Returns period, t0, duration, depth, and which multiple won ("1×", "½×", "2×").
+    """BLS search restricted to ±tol around a known period (e.g. a TOI's).
+    v2 rule (2026-11-24, approved): ALWAYS use the 1× window when it fits in the data (half
+    the span); ½× and 2× are only used if 1× doesn't fit. Simulations: safe (planets at the
+    correct period and EBs at 2× catalog still caught) but neutral; real dev data: rescues
+    LTT 1445 A b and TOI-2266, which the old "highest power wins" rule put at 2× / ½×.
+    Returns period, t0, duration, depth, and which multiple was used ("1×", "½×", "2×").
     """
     t = np.asarray(lc.time.value, dtype=float)
     half_span = (t.max() - t.min()) / 2
-    best = None
+    best, windows = None, {}
     for factor, label in [(1, "1×"), (0.5, "½×"), (2, "2×")]:
         P = factor * plain(period_hint)
         if P * (1 + tol) > half_span:                  # must repeat ≥ 2× in the sector
@@ -189,10 +192,13 @@ def search_near(lc, period_hint, tol=0.02, n_periods=2000):
         pg = lc.to_periodogram(method="bls", period=periods,
                                duration=[0.05, 0.08, 0.1, 0.15, 0.2])
         power = plain(pg.max_power)
+        windows[label] = (power, pg)
         if best is None or power > best[0]:
             best = (power, label, pg)
     if best is None:
         raise ValueError(f"Period hint {plain(period_hint):.3f} d is longer than half the data span")
+    if "1×" in windows:                                     # v2: always 1× when available
+        best = (windows["1×"][0], "1×", windows["1×"][1])
     _, label, pg = best
     return (pg.period_at_max_power, pg.transit_time_at_max_power,
             pg.duration_at_max_power, pg.depth_at_max_power, label)
@@ -870,7 +876,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
                  period_hint=None):
     """Run the full pipeline on a star. Returns a dictionary of results.
     period_hint: a known period (e.g. the TOI's); the search then only looks within ±2% of
-    1×, ½× or 2× of it, so we vet that signal and not a different one.
+    it (always the 1× window when it fits), so we vet that signal and not a different one.
     """
     lcs = download(star_name, n_sectors)
     star_info, star_source = get_star_info(lcs[0])
