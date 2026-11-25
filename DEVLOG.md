@@ -540,3 +540,9 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   neighbour depth 5, SNR 3, centroid 1.
 - Compared with development (97.6% kept, 53% caught): FP catch rate held (51%); planets kept is
   lower (92%), below the 95% dev bar. No change to v2. Investigation of the 8 losses → v3 input.
+
+## 2026-11-25 — Rule: blind_v2 after the blind run (Julien)
+- The 8 blind_v2 planet losses are NOT investigated under v2; the blind results stay as reported.
+- If they are investigated for v3, blind_v2 becomes v3 **development** data, and v3 gets a
+  fresh blind sample (from the 367 unused matching FPs + unused planets, drawn and locked
+  before any v3 change).
