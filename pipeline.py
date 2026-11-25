@@ -203,6 +203,7 @@ def plot_fit(t, f, popt):
 
 LD_TABLE_GLOB = "data/claret2017_tess_quadratic_*.csv"   # dated snapshot(s); newest is used
 LD_PRIOR_SIGMA = 0.1
+MAXFEV = 20000          # curve_fit function-evaluation limit (default ~100 × n_params; deep EBs hit it)
 _ld_interp = None
 
 def ld_prior_for(star_info, sigma=LD_PRIOR_SIGMA):
@@ -265,7 +266,8 @@ def _ld_fit(model_x, t, f, guess, bounds, ld_prior, sigma_f):
         y = np.r_[f, u1c, u2c]
         sig = np.r_[np.full(n, sigma_f), sp, sp]
         func = lambda _, *x: np.r_[model_x(t, *x), q_to_u(x[-2], x[-1])]
-    popt, pcov = curve_fit(func, np.arange(len(y)), y, p0=guess, bounds=bounds, sigma=sig)
+    popt, pcov = curve_fit(func, np.arange(len(y)), y, p0=guess, bounds=bounds, sigma=sig,
+                           maxfev=MAXFEV)
     chi2 = np.sum(((y - func(None, *popt)) / sig) ** 2)
     return popt, pcov, chi2
 
