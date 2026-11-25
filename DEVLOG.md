@@ -274,3 +274,30 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
 - Unused matching stars after dev_v3: 367 FP, 506 CP/KP (enough for a ~100 FP v3 blind sample).
 - Code for the dev_v3 run: odd/even v3 + Claret priors (commit after 927087a); period-window and
   ephemeris fixes NOT included (known failure modes).
+
+## 2026-11-24 (evening) — Decisions (Julien)
+**v2 scope, final:** odd/even v3 (in); per-sector ephemeris fix (if its simulations meet the
+criteria: injected planets at the correct period, EBs at 2× catalog still caught, 13-planet
+regression unchanged); Gaia neighbour-depth check (validated on simulations; must not flag
+real planets, including crowded fields like HATS-55 b). Then ONE full rerun of all dev sets
+→ freeze → push → blind_v2. No other additions to v2.
+
+**Period window: not in v2** — it's mostly a detrending problem. Known v2 limitation:
+HIP 67522 b and other very active stars. With a ~1-day detrending window, spot residuals on
+fast rotators (P_rot 0.5–5 d, 0.5–3% amplitude) can be larger than the transit, and BLS locks
+onto them even inside the ±2% 1× window. Simulation (60 spotted planets): fitted period
+within 1% of the truth — current max-power rule 43%, always-1× 53%.
+
+**v3 plan (after the blind_v2 run, with its own fresh blind sample), in order:**
+1. Difference-image centroid — go/no-go first: measure the real-data positional floor on the
+   known planets (~½ day). Build the full check only if the floor is below ~0.3 px;
+   otherwise stop and log the result.
+2. Detrending for fast-rotating spotted stars (own design note + simulations; needs a full
+   dev rerun because it changes cleaning for every star).
+3. Per-transit depth, only if time allows (needs red-noise errors and crowding handling).
+v2 hunting on open PC TOIs can start right after the blind run.
+
+**GitHub:** gh CLI from the official release into ~/.local/bin; browser login. Check the
+no-reply format; push v2-vetting as-is tonight (with OK) to publicly timestamp that blind_v2
+was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: the freeze
+(tag v2-freeze), right after the blind run, and before hunting — each with Julien's OK.
