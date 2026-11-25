@@ -138,3 +138,17 @@ def test_download_retries_network_errors_only(monkeypatch):
     with pytest.raises(ValueError):                                       # no data: not retried
         pl.download("Y", 2)
     assert calls["n"] == 1
+
+
+def test_timing_fix_recovers_period_across_long_gap():
+    """Two sectors 1100 d apart: the straight-line ephemeris must land on the true period."""
+    from sims.ephemeris_proto_sim import lcs_for
+    rng = np.random.default_rng(0)
+    P, t0 = 7.91, 1.2
+    p = [t0, P, 0.067, 4.2 * P ** (2 / 3), 0.3, 0.4, 0.2]
+    lcs = lcs_for(lambda T: pl.transit_model(T, *p), rng, 1e-3)
+    c0 = pl.clean(lcs[0]); Ph, T0, D, dep, _ = pl.search_near(c0, P)
+    c1 = pl.clean(lcs[0], period=Ph, t0=T0, duration=D)
+    popt, errs, *_ = pl.fit_transit(c1, Ph, T0, D, dep)
+    T0e, Pe, sT0, sP, notes = pl.per_sector_ephemeris(lcs, popt, errs, D, dep)
+    assert not notes and abs(Pe - P) < 1e-4 and abs(Pe - P) < abs(popt[1] - P)

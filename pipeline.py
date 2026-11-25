@@ -370,6 +370,39 @@ def fit_transit(lc, period, t0, duration, depth, start=None, start_errs=None,
         return popt, errs, inc, inc_err, flags, pcov
     return popt, errs, inc, inc_err, flags
 
+def per_sector_ephemeris(lcs, popt1, errs1, duration, depth, ld_prior=None):
+    """Timing fix (2026-11-24). A transit TIME is measured far more precisely than a period from
+    one sector, so: measure the transit time in each later sector (BLS at the 1-sector period to
+    locate it, then a fit), count whole orbits N_k = round((t_k − t_1)/P_1), and fit one weighted
+    straight line t_k = T0 + N_k·P. A sector whose time is more than P/4 from a whole orbit is
+    left out (orbit count ambiguous) and noted. Returns T0, P, σ_T0, σ_P, notes.
+    Simulation (hard case, sims/ephemeris_proto_sim.py): correct period 33% → 70%, median
+    |ΔP| 126 s → 0.7 s; EBs at 2× catalog still caught (100%)."""
+    t1, P1 = popt1[0], popt1[1]
+    pts = [(0.0, t1, max(errs1[0], 1e-5))]
+    notes = []
+    for lc in lcs[1:]:
+        try:
+            c = clean(lc)
+            pg = c.to_periodogram(method="bls", period=P1 * np.array([1 - 1e-6, 1, 1 + 1e-6]),
+                                  duration=[0.05, 0.08, 0.1, 0.15, 0.2])   # BLS needs ≥ 2 periods
+            tk0 = plain(pg.transit_time_at_max_power)
+            ck = clean(lc, period=P1, t0=tk0, duration=duration)
+            pk, ek, *_ = fit_transit(ck, P1, tk0, duration, depth, ld_prior=ld_prior)
+        except Exception as e:
+            notes.append(f"S{lc.meta.get('SECTOR')}: fit failed ({type(e).__name__})"); continue
+        N = np.round((pk[0] - t1) / P1)
+        if abs(pk[0] - (t1 + N * P1)) > P1 / 4:
+            notes.append(f"S{lc.meta.get('SECTOR')}: orbit count ambiguous"); continue
+        pts.append((N, pk[0], max(ek[0], 1e-5)))
+    if len(pts) < 2:
+        return t1, P1, errs1[0], errs1[1], notes
+    N, t, e = map(np.array, zip(*pts))
+    A = np.vstack([np.ones_like(N), N]).T / e[:, None]
+    coef, *_ = np.linalg.lstsq(A, t / e, rcond=None)
+    cov = np.linalg.inv(A.T @ A)
+    return coef[0], coef[1], np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1]), notes
+
 """---
 # 5. Upper limits
 When b is stuck near 0 (nearly edge-on), its ± is meaningless. profile_b fixes b on a grid,
@@ -841,10 +874,14 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     cleaned = c1
 
     # Refine with all sectors, timing window set by the 1-sector uncertainties
-    if len(lcs) > 1:
-        cleaned = clean_all(lcs, period=popt[1], t0=popt[0], duration=duration)
+    ephem_notes = []
+    if len(lcs) > 1:                       # timing fix: per-sector transit times → straight line
+        T0e, Pe, sT0, sP, ephem_notes = per_sector_ephemeris(lcs, popt, errs, duration, depth,
+                                                             ld_prior)
+        cleaned = clean_all(lcs, period=Pe, t0=T0e, duration=duration)
         popt, errs, inc, inc_err, flags, pcov = fit_transit(cleaned, period, t0, duration, depth,
-                                                            start=popt, start_errs=errs,
+                                                            start=np.r_[T0e, Pe, popt[2:]],
+                                                            start_errs=[sT0, sP],
                                                             plot=plot, return_pcov=True,
                                                             ld_prior=ld_prior)
 
@@ -853,6 +890,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
                "lc": cleaned, "star_info": star_info, "period_choice": period_choice,
                "ld_source": ld_source, "ld_prior": ld_prior, "raw_lcs": lcs,
+               "ephem_notes": "; ".join(ephem_notes),
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)
