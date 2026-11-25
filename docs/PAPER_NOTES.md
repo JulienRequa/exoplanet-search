@@ -95,8 +95,11 @@ results/devset_v3sample_window_rerun_2026-11-24.csv; DEVLOG.
 a/Rs and the transit density; LD priors (M3) reduce but do not remove it. Fitting from a
 second start (b = 0.6) and keeping the lower-χ² solution fixes the remaining cases.
 **Numbers.** HATS-28 b: b 0.00 → 0.57, a/Rs 12.65 → 10.37, density 2.38× (4.3σ, FAIL) →
-1.31× (0.7σ, PASS). Same pattern earlier: TOI-2416 b, pi Men c. 13-planet regression and
-full dev rerun: pending.
+1.31× (0.7σ, PASS). Same pattern earlier: TOI-2416 b, pi Men c. 13-planet regression: no
+verdict change. Full dev rerun: planets kept unchanged (121/124); cost: Kepler-74 b (faint) jumps
+to a grazing solution at the b bound (Rp 5 R_Jup → size FAIL), and 3 borderline FPs pass
+(69 → 67/127 caught). Honest trade-off: multi-start finds the lower χ², which on noisy data can
+be the grazing branch of the b–Rp/Rs degeneracy.
 **Evidence.** commit e216703; DEVLOG 2026-11-24/25.
 **Section.** methods.
 

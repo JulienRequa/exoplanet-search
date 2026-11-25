@@ -493,3 +493,22 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   real sectors 40+41 / 33+34: TOI 1172.01 → PLANET CANDIDATE (some checks weak) (FP missed);
   TIC 96246348 → LIKELY FALSE POSITIVE (FP caught). 0 crashes. 13-planet regression unchanged
   (0.000σ; results/known_dupfix_2026-11-25.csv).
+
+## 2026-11-25 (early) — Full dev rerun with multi-start (e216703)
+- 13-planet regression (results/known_multistart_2026-11-25.csv): no verdict changes. pi Men c
+  b 0.01 → 0.86 (both at/near bounds; shallow transit, b unconstrained, L3), density WEAK → PASS
+  (0.27×, 2.3σ); largest change 1.5σ; all others < 0.1σ.
+- Full rerun 93 + 200 (results/devfull93_multistart_2026-11-25.csv, devfull200_multistart_...):
+  planets kept 32/32 + 89/92 = 121/124 (97.6%); FPs caught 23/45 + 44/82 = 67/127 (53%);
+  0 crashes. (Pre-multi-start, with duplicate fix: 121/124 and 69/127.)
+- Every verdict change vs the pre-multi-start run:
+  - HATS-28 b: FP → PC (intended; b 0 → 0.57, density PASS).
+  - Kepler-74 b (TIC 137903329, Tmag 13.9): PC → FP. The b = 0.6 start found a grazing
+    solution with lower χ²: b 0.07 → 1.20 (at the upper bound), Rp/Rs 0.10 → 0.35 → Rp 5.05 R_Jup
+    → Planet size FAIL. Grazing profile only 0.8σ, i.e. the data cannot tell grazing from
+    central (noisy faint star). Known degeneracy; published Kepler-74 b is not grazing.
+  - 3 FPs no longer caught, all borderline single-check catches before: TIC 4999813 (SNR 6 → 8),
+    TIC 271439193 (SNR ≈ 7.1 either side), TIC 175180796 (odd/even 3.7σ → 2.7σ). Better fits move
+    near-threshold cases; no threshold changed.
+- Bar: planets ≥ 95% ✓ (3 losses explained: HATS-64 b, K2-19 b threshold; Kepler-74 b grazing
+  degeneracy), 0 crashes ✓, FP catch 53% vs 42% baseline ✓.
