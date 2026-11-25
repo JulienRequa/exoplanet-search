@@ -175,3 +175,35 @@ DEVELOPMENT ONLY — v1 is not re-scored as an improvement. All runs with period
 ### Push plan (later, not yet)
 After the freeze: set up GitHub login, confirm commits use the no-reply email, and push
 the frozen rules BEFORE running the blind sample (public timestamp). Nothing pushed yet.
+
+### Diagnosis results (baseline code; per-transit depths from the cleaned light curve)
+- 32 not 33: HIP 67522 b (TIC 166527623, TOI 6551.01, KP, P = 6.959 d). With the hint, BLS chose
+  the ½× window and found 3.545 d (1.9% off ½×, at the window edge) — not the planet. Very
+  young, spotted star: variability beats the transit in BLS → period mismatch, untestable.
+- HATS-55 b (TIC 114299824, odd/even 3.0σ) → cause (b) + (c). Single-transit depths scatter
+  8.8× (reduced χ²) more than odd_even's white-noise errors; scatter-based error gives 1.3σ.
+  Sector 61 is 29% deeper than sector 34 (19 600 vs 15 200 ppm) in a very crowded aperture
+  (CROWDSAP 0.39); Rp/Rs 0.135 vs published 0.114. Parity is balanced per sector, so (c)
+  adds scatter rather than creating the difference. Not (a).
+- TOI-2207 b (TIC 90850770, 11.4σ) → none of (a)–(d): NEW cause (e) ephemeris drift. The
+  two sector-67 "transits" have negative depth (no transit at the predicted times). Fitted
+  P = 7.99905 d vs TOI 8.00049 vs published 8.00197 d: over 136 cycles (S27 → S67) that is
+  4.7–9.5 h, so the transits are missed; both S67 epochs are "even". The multi-sector
+  refit's period window (5× the 1-sector error) did not contain the true period. Side
+  effect: S67's real transits were not masked during flattening (d).
+- TOI-2364 b (TIC 39414571, 3.5σ, 1 sector) → cause (d). Epoch 0 sits at a gap edge
+  (0.00 d) and has negative depth (−2769 ppm): a partial transit distorted by trim/ramp.
+  The other four transits agree (8548/9783 odd, 9322/9747 even).
+- TOI-2416 b (TIC 237922465, density 2.78×, 5.1σ) → eccentricity (photoeccentric effect).
+  Published e = 0.32; the density check assumes a circular orbit. ρ_obs/ρ_true =
+  [(1 + e sinω)/√(1 − e²)]³ reaches 2.7 for e = 0.32; our a/Rs 17.4 vs published 14.4.
+  (Published values from the NASA Exoplanet Archive pscomppars, 2026-11-24.)
+
+### Odd/even prototypes (NOT in pipeline)
+- v2: β from scatter of single-transit depths within each parity group + drop partial
+  transits → rescues all 3 planets but un-catches 7/9 odd/even FPs (β up to 55: within-group
+  scatter absorbs ephemeris failures and real depth variation). REJECTED.
+- v3: β from ~300 fake transits outside transit (signal cannot leak in) + drop transits not
+  fully covered → FPs: 7/9 still FAIL (loses TOI 1127.01, still caught by 2 other checks, and
+  TOI 2554.01, β = 4.5, Comment "stellar variability…" — net 19 → 18 caught);
+  planets: HATS-55 b 2.6σ PASS, TOI-2364 b 0.7σ PASS, TOI-2207 b 5.8σ still FAIL (needs (e)).
