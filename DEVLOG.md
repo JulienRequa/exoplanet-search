@@ -370,3 +370,19 @@ Code: odd/even v3 + Claret priors (549e92e), no timing fix, max-power period win
   * Unexplained (1): TOI-3023 b (odd/even 3.2σ) — diagnose like HATS-55 b.
 - Projection (not measured): timing fix + motion fix → combined planets ≈ 120/126 (95%);
   plus an always-1× window ≈ 97–98%. The timing fix's effect on FPs is NOT measured yet.
+
+## 2026-11-24 (night) — Approvals for Wednesday (Julien), adjusted timeline agreed
+Priority order:
+1. Timing fix (per-sector ephemeris): build.
+2. Centroid proper-motion bug: approved — propagate the target position (Gaia/TIC) to each
+   sector's epoch; confirm on GJ 436 b, LTT 1445 A b and the 13-planet regression.
+3. **Period window: brought back into v2 — this REVERSES the earlier decision ("not in v2")
+   because dev_v3 showed it costing 5 planets on ordinary (not just very active) stars.**
+   Implement only if simulations on ordinary stars show injected planets recovered at the
+   correct period and EBs at 2× catalog still caught.
+4. Within-sector odd/even: simulate; build only if EBs are still caught.
+5. Gaia neighbour check last; moves to v3 if Wednesday runs out.
+Multi-start fitting: dropped (WASP-33 showed no local-minimum problem).
+Hunting scope: the ~2,900 open PCs inside v2's tested range (P 0.5–10 d, depth > 2000 ppm);
+the rest wait for the sibling/shallow work with injection tests.
+Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag v2-freeze) → blind_v2.
