@@ -30,15 +30,22 @@ def targets():
 
 
 def run(out, only=None):
-    rows = []
+    """Saves after every star; if OUT already exists, stars in it are skipped (resume after
+    a crash or restart)."""
+    import os
+    rows = pd.read_csv(out).to_dict("records") if os.path.exists(out) else []
+    done = {r["star"] for r in rows}
+    if done:
+        print(f"resuming: {len(done)} stars already in {out}", flush=True)
     for star, P, kind, toi, comment in targets():
-        if only and star not in only:
+        if (only and star not in only) or star in done:
             continue
         row = {"kind": kind, "TOI": toi, **row_for(star, 2, P, hint=True)}
         row["Comments"] = comment
         rows.append(row)
+        pd.DataFrame(rows).to_csv(out + ".tmp", index=False)
+        os.replace(out + ".tmp", out)                  # atomic: never a half-written file
         print(f"{kind:12s} {star:14s} {row.get('verdict', row.get('error'))}", flush=True)
-    pd.DataFrame(rows).to_csv(out, index=False)
     print("saved", out)
 
 
