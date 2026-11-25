@@ -451,3 +451,16 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   single-sector search → FAILS the "FPs must not get easier to pass" criterion as designed
   (more data + finer grid = more chances for noise to look like a transit). Would need a
   stricter detection threshold (a rule change).
+
+## 2026-11-24 (night) — Within-sector odd/even and neighbour-depth: built and checked
+- Within-sector odd/even (229711a): 1-sector/untagged output identical to v3 (max |Δσ|
+  8.9e-16 over 24 cases). 13-planet regression unchanged (0.000σ). HATS-55 b → PLANET
+  CANDIDATE; TOI-3023 b → PLANET CANDIDATE (borderline: combining the per-sector differences
+  with weights brings it just under 3σ — corrects my earlier "would not rescue").
+- Gaia neighbour-depth check (dc94581): own check "Neighbor depth". 13-planet regression: all
+  fitted values unchanged; 12 PASS, WASP-126 WEAK (target hypothesis rejected, no neighbour
+  fits) → verdict "PLANET CANDIDATE (some checks weak or not run)"; no FAIL. Real smoke test:
+  HATS-55 b WEAK; GJ 436 b PASS; three neighbour-contaminated dev FPs PASS (target and the
+  ExoFOP-named neighbour both fit: light-curve centroids too weak to separate them).
+- All approved v2 changes are now built: odd/even v3, timing fix, Claret priors, proper motion,
+  always-1× window, within-sector odd/even, neighbour-depth, download retry.
