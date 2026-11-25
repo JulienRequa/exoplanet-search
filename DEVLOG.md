@@ -426,3 +426,12 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   would not rescue it. Most likely a chance fluctuation or systematics in a few S65 transits;
   ~1 such borderline case is expected by chance among ~130 planets at a 3σ threshold.
   Logged as an explained, unfixable loss (no rule change).
+
+## 2026-11-24 (night) — Proper-motion fix and always-1× window: checks
+- Proper-motion fix (c6a9298): GJ 436 b → PLANET CANDIDATE (source offset 1.15 → 0.17 px).
+  13-planet regression identical to the timing-fix run (largest change 0.000σ).
+- Always-1× window (609de6a): LTT 1445 A b → PLANET CANDIDATE at 1× (centroid offset 0.26 px
+  once analysed at the right period), TOI-2266 → PLANET CANDIDATE, GJ 436 b still PC.
+  13-planet regression identical (0.000σ) — expected: the regression runs without a hint.
+  (results/check_pmfix_2026-11-24.csv, check_window_2026-11-24.csv,
+  known_pmfix_2026-11-24.csv, known_window_2026-11-24.csv)
