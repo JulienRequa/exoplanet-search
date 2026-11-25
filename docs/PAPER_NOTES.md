@@ -79,6 +79,17 @@ target look offset from its own light, so the centroid check wrongly blames a ne
 **Status.** bug found in dev sample 2; fix pending approval.
 **Section.** methods (+ a caution for other TESS vetting pipelines).
 
+### M6. Period window with a catalog hint: always use 1×
+**Finding.** When vetting a known TOI, searching only near the catalog period (not ½× or 2×)
+keeps the analysis on the signal that was actually reported.
+**Numbers.** Simulations: safe but neutral — quiet stars: final period correct 100% under both
+rules, EBs at 2× catalog caught 100% under both; spotted stars: 43% → 53%. Real dev data:
+rescues LTT 1445 A b and TOI-2266 (both had been analysed at 2× / ½×). Faint planets
+(Kepler-44 b, TOI-4306, K2-415 b) are NOT rescued: too weak to find in one sector.
+**Evidence.** sims/period_window_sim*.py/md, sims/period_window_ordinary_sim*.py/md;
+results/devset_v3sample_window_rerun_2026-11-24.csv; DEVLOG.
+**Section.** methods (honest: benefit shown on real data, not in simulation).
+
 ---
 
 ## Results

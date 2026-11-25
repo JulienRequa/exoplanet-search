@@ -402,3 +402,17 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
 - Timing fix committed (f8927e5). 13-planet regression (results/known_timingfix_2026-11-24.csv):
   all unchanged except WASP-33 b (better-cleaned data, as explained above); WASP-62 unchanged.
   Identical to the prototype's regression (largest difference 0.000σ): the port is faithful.
+
+## 2026-11-24 (night) — Period window approved; overnight queue
+- **Always-1× approved for v2** (when vetting known TOIs with a period hint). Honest record:
+  simulations show it is SAFE (both criteria pass: planets at the correct period, EBs at 2×
+  catalog caught) but NEUTRAL in simulation (the current rule also scored 100% on quiet stars;
+  on spotted stars 43% → 53%). The evidence of benefit is real data: 2 dev_v3 planets
+  (LTT 1445 A b, TOI-2266) rescued.
+- Multi-sector search (for the 4 faint planets): design + simulation requested; not approved.
+- Standing rule: approved changes are built right away; simulations/downloads run any time;
+  rule changes wait for approval. Short summaries 2–3×/week during school weeks.
+- Overnight queue: (1) proper-motion fix + GJ 436 b, LTT 1445 A b, 13-planet regression;
+  (2) always-1× window + regression; (3) simulations: within-sector odd/even, multi-sector
+  search, Gaia neighbour-depth; (4) pre-cache light curves for blind_v2 + hunting targets
+  (download only; disk check first); plus a TOI-3023 b diagnosis.
