@@ -524,3 +524,19 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
 - Known limitations: listed in VETTING_RULES.md and PAPER_NOTES (L1–L4 + Kepler-74 b).
 - Added `python dev_set.py blind OUT.csv` (same code path as the dev runs) before the freeze;
   blind_v2.csv md5 66805c4c73b34c6cef991a2e3fc7d2f1 (unchanged since lock 0217ed9).
+
+## 2026-11-25 — blind_v2 run (frozen code v2-freeze, 46b253d), reported as-is
+- `python dev_set.py blind` from a clean worktree at v2-freeze; light curves from the pre-cache.
+  blind_v2.csv md5 66805c4c73b34c6cef991a2e3fc7d2f1. Results: results/blind_v2_results_2026-11-25.csv.
+- Real planets (100): no data 0, period mismatch 1, testable 99 → kept **91 (92%)**.
+- False positives (100): no data 13, period mismatch 2, testable 85 → caught **43 (51%)**.
+- Crashes: **0**.
+- Planets lost (as reported; not investigated before this entry):
+  - odd/even: HD 202772 A b 3.7σ, TOI-837 b 5.2σ (b at 1.20 bound), HAT-P-49 b 3.3σ,
+    Qatar-8 b 3.4σ, TOI 1920.01 3.1σ
+  - density: WASP-59 b 2.07× (3.0σ), WASP-136 b 2.33× (3.2σ)
+  - planet size: TOI-1408 b 3.76 R_Jup (b at 1.20 bound)
+- FP catches by check (testable): planet size 22, secondary eclipse 14, odd/even 8, density 8,
+  neighbour depth 5, SNR 3, centroid 1.
+- Compared with development (97.6% kept, 53% caught): FP catch rate held (51%); planets kept is
+  lower (92%), below the 95% dev bar. No change to v2. Investigation of the 8 losses → v3 input.
