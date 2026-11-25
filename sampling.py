@@ -49,6 +49,16 @@ def main(which):
         s = draw(toi, 40, 20, 3, exclude)
         s.to_csv("data/dev_v2.csv", index=False)
         print("dev_v2:", s["group"].value_counts().to_dict(), "| unique TICs:", s["TIC ID"].nunique())
+    elif which == "dev3":           # "dev sample 2" (2026-11-24): finding problems, not reporting
+        exclude |= set(pd.read_csv("data/blind_v2.csv")["TIC ID"])
+        exclude |= set(pd.read_csv("data/dev_v2.csv")["TIC ID"])
+        s = draw(toi, 100, 100, 4, exclude)
+        s.to_csv("data/dev_v3.csv", index=False)
+        print("dev_v3:", s["group"].value_counts().to_dict(), "| unique TICs:", s["TIC ID"].nunique())
+    # how many matching FPs/planets are still unused by any sample
+    used = exclude | (set(pd.read_csv("data/dev_v3.csv")["TIC ID"]) if which == "dev3" else set())
+    print("unused matching stars — FP:", len(pool(toi, ["FP"], used)),
+          "| CP/KP:", len(pool(toi, ["CP", "KP"], used)))
 
 
 if __name__ == "__main__":

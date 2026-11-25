@@ -6,12 +6,22 @@ Targets: 13 known planets (pipeline.TARGETS) + the 20 v1 FPs (data/fp_sample_v1.
 Every run uses the published / TOI period as period_hint (as the blind test will).
 
     python dev_set.py run OUT.csv [STAR ...]     run all (or only the named stars)
+    python dev_set.py run3 OUT.csv               dev sample 2 (data/dev_v3.csv) only
     python dev_set.py summary OUT.csv            planets kept, FPs caught, which check caught each
+    (summary accepts several CSVs combined: pass a CSV made with pandas.concat)
 """
 import sys
 import pandas as pd
 import pipeline as pl
 from regression import row_for
+
+
+def dev3_targets():
+    """dev sample 2 (data/dev_v3.csv, random_state=4) — run separately."""
+    dev = pd.read_csv("data/dev_v3.csv")
+    return [(f"TIC {int(r['TIC ID'])}", r["Period (days)"],
+             "dev3 FP" if r["group"] == "FP" else "dev3 planet", r["TOI"], r["Comments"])
+            for _, r in dev.iterrows()]
 
 
 def targets():
@@ -29,7 +39,7 @@ def targets():
     return t
 
 
-def run(out, only=None):
+def run(out, only=None, which=targets):
     """Saves after every star; if OUT already exists, stars in it are skipped (resume after
     a crash or restart)."""
     import os
@@ -37,7 +47,7 @@ def run(out, only=None):
     done = {r["star"] for r in rows}
     if done:
         print(f"resuming: {len(done)} stars already in {out}", flush=True)
-    for star, P, kind, toi, comment in targets():
+    for star, P, kind, toi, comment in which():
         if (only and star not in only) or star in done:
             continue
         row = {"kind": kind, "TOI": toi, **row_for(star, 2, P, hint=True)}
@@ -54,8 +64,8 @@ def summary(csv):
     if "error" not in d:
         d["error"] = pd.NA
     chk = [c for c in d.columns if c.startswith("check:")]
-    planets = d[d.kind.isin(["known planet", "dev planet"])]
-    fps = d[d.kind.isin(["v1 FP", "dev FP"])]
+    planets = d[d.kind.isin(["known planet", "dev planet", "dev3 planet"])]
+    fps = d[d.kind.isin(["v1 FP", "dev FP", "dev3 FP"])]
 
     def split(g):
         err = g["error"].notna()
@@ -87,5 +97,7 @@ def summary(csv):
 if __name__ == "__main__":
     if sys.argv[1] == "run":
         run(sys.argv[2], only=sys.argv[3:] or None)
+    elif sys.argv[1] == "run3":
+        run(sys.argv[2], only=sys.argv[3:] or None, which=dev3_targets)
     else:
         summary(sys.argv[2])

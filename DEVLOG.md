@@ -265,3 +265,12 @@ the frozen rules BEFORE running the blind sample (public timestamp). Nothing pus
   hard case (Tmag 13, 0.2% dip, 3 transits, PSF 15% wrong): neighbour at 0.5 px detected
   96–100%, 0.3 px 34%, 0% false alarms; ~10% distance bias from the PSF error. Idealised:
   no jitter, PRF variation or WCS/Gaia error — the real-data systematic floor is unknown.
+
+## 2026-11-24 (evening) — "dev sample 2" (data/dev_v3.csv)
+- 100 FP + 100 CP/KP, random_state=4, same cuts; excludes blind_v2, v1, dev_v2 and the 13 known
+  hosts by TIC (overlaps: 0). Purpose: FINDING PROBLEMS before the freeze — not for reporting.
+- blind_v2 untouched: md5 unchanged, only commit = lock commit 0217ed9, none of its stars in
+  any results file.
+- Unused matching stars after dev_v3: 367 FP, 506 CP/KP (enough for a ~100 FP v3 blind sample).
+- Code for the dev_v3 run: odd/even v3 + Claret priors (commit after 927087a); period-window and
+  ephemeris fixes NOT included (known failure modes).
