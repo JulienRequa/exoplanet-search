@@ -487,18 +487,48 @@ def density_check(results):
     return rho_cat, ratio, sigma, weak
 
 def grazing_check(results):
-    """Is the transit grazing (the object only clips the stellar edge)? That happens when
-    b + Rp/Rs > 1. Returns (g, g_err, sigma) with g = b + Rp/Rs − 1; sigma = g / g_err
-    (None if the uncertainty can't be computed). Error includes the b–Rp/Rs covariance.
+    """Is the transit grazing (the object only clips the stellar edge, b + Rp/Rs > 1)?
+    Profile-likelihood test (same idea as profile_b): refit with b + Rp/Rs ≤ 1 forced
+    (b = s·(1 − Rp/Rs), 0 ≤ s ≤ 1) and see how much worse χ² gets. Returns (g, sigma):
+    g = b + Rp/Rs − 1 at the best fit; sigma = √Δχ² (one-sided), 0 if the best fit isn't grazing.
+    (Replaces the covariance rule, 2026-11-24: simulations showed it had ~no power.)
     """
-    k, k_err = results["Rp/Rs"]
-    b, b_err = results["b"]
-    g = b + k - 1
-    var = b_err**2 + k_err**2 + 2 * results.get("cov_rp_b", 0.0)
-    if not np.isfinite(var) or var <= 0:
-        return g, None, None
-    g_err = np.sqrt(var)
-    return g, g_err, g / g_err
+    popt = get_popt(results)
+    g = popt[4] + popt[2] - 1
+    if g <= 0:
+        return g, 0.0
+    lc, prior = results["lc"], results.get("ld_prior")
+    t = np.asarray(lc.time.value, dtype=float)
+    f = np.asarray(lc.flux.value, dtype=float)
+    P, T0 = popt[1], popt[0]
+    near = np.abs((t - T0 + 0.5 * P) % P - 0.5 * P) < 0.2
+    t, f = t[near], f[near]
+    sig = _noise(f)
+    lo = [T0 - 0.01, P - 0.0001, 0.01, 1.5,   0.0, 0.0, 0.0]
+    hi = [T0 + 0.01, P + 0.0001, 1.00, 100.0, 1.2, 1.0, 1.0]
+    q = u_to_q(popt[5], popt[6])
+
+    def best(model, starts, hi_):
+        out = np.inf
+        for st in starts:
+            try:
+                _, _, c2 = _ld_fit(model, t, f, np.clip(st, lo, hi_), (lo, hi_), prior, sig)
+                out = min(out, c2)
+            except (RuntimeError, ValueError):
+                pass
+        return out
+
+    free = lambda tt, t0, per, k, a, b, q1, q2: transit_model(tt, t0, per, k, a, b, *q_to_u(q1, q2))
+    forced = lambda tt, t0, per, k, a, s, q1, q2: transit_model(tt, t0, per, k, a, s * (1 - k),
+                                                                *q_to_u(q1, q2))
+    c_free = best(free, [[T0, P, popt[2], popt[3], popt[4], *q]], hi)
+    hi_s = hi[:4] + [1.0] + hi[5:]                            # s ≤ 1
+    c_forced = best(forced, [[T0, P, k0, popt[3], s0, *q]     # curved valley → several starts
+                             for s0 in (0.3, 0.9, 0.99) for k0 in (popt[2], 0.5 * popt[2])], hi_s)
+    c_free = min(c_free, c_forced)        # the forced model is a special case of the free one
+    if not np.isfinite(c_forced):
+        return g, None
+    return g, float(np.sqrt(max(c_forced - c_free, 0.0)))
 
 def _target_pixel(lc):
     """Target's CCD (column, row) from its RA/Dec and the WCS of the file's aperture image.
@@ -614,7 +644,7 @@ def vet_star(results, verbose=True):
         _, _, oe_sigma = odd_even(lc, popt)
         sec_depth, sec_err, sec_sigma, sec_ratio = secondary_eclipse(lc, popt)
         dens = density_check(results)
-    g, g_err, g_sigma = grazing_check(results)
+    g, g_sigma = grazing_check(results)
     cen = centroid_check(results) if "raw_lcs" in results else None
 
     # Detection strength: dip depth vs noise of the averaged in-transit points
@@ -654,10 +684,10 @@ def vet_star(results, verbose=True):
         checks.append(("Planet size", "PASS" if rp_jup < 2.5 else "FAIL",
                        f"Rp = {rp_jup:.2f} R_Jup"))
     if g_sigma is None:
-        checks.append(("Grazing", "N/A", f"b + Rp/Rs = {g + 1:.2f} (no uncertainty)"))
+        checks.append(("Grazing", "N/A", f"b + Rp/Rs = {g + 1:.2f} (forced fit failed)"))
     else:
         checks.append(("Grazing", "WARN" if g_sigma > 3 else "PASS",
-                       f"b + Rp/Rs = {g + 1:.2f} ± {g_err:.2f} ({g_sigma:+.1f}σ from 1)"))
+                       f"b + Rp/Rs = {g + 1:.2f}; grazing at {g_sigma:.1f}σ (profile)"))
 
     if cen is None:
         checks.append(("Centroid", "N/A", "no usable centroid data"))
@@ -744,7 +774,7 @@ def analyze_star(star_name, n_sectors=1, plot=False, verbose=True, vet=False,
     results = {"star": star_name, "n_sectors": len(lcs), "flags": flags,
                "inc": (inc, inc_err), "density": (rho, rho * 3 * errs[3] / popt[3]),
                "lc": cleaned, "star_info": star_info, "period_choice": period_choice,
-               "ld_source": ld_source, "raw_lcs": lcs,
+               "ld_source": ld_source, "ld_prior": ld_prior, "raw_lcs": lcs,
                "star_source": ", ".join(f"{k}={v}" for k, v in star_source.items())}
     for name, val, err in zip(PARAM_NAMES, popt, errs):
         results[name] = (val, err)

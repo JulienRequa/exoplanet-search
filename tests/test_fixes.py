@@ -15,11 +15,12 @@ def fake_lc(params, noise, seed=0):
     return lk.LightCurve(time=T, flux=f, flux_err=np.full(T.size, noise))
 
 
-def fit(lc):
+def fit(lc, ld_prior=None):
     P, T0, D, dep = pl.search(lc)
-    popt, errs, inc, ie, flags, pcov = pl.fit_transit(lc, P, T0, D, dep, return_pcov=True)
+    popt, errs, inc, ie, flags, pcov = pl.fit_transit(lc, P, T0, D, dep, return_pcov=True,
+                                                      ld_prior=ld_prior)
     r = {n: (v, e) for n, v, e in zip(pl.PARAM_NAMES, popt, errs)}
-    r["cov_rp_b"], r["flags"] = pcov[2, 4], flags
+    r["cov_rp_b"], r["flags"], r["lc"], r["ld_prior"] = pcov[2, 4], flags, lc, ld_prior
     return r
 
 
@@ -51,17 +52,19 @@ def test_star_info_header_used_and_nan_is_missing(monkeypatch):   # bug 2
     assert info["RADIUS"] is None and src["RADIUS"] == "missing"
 
 
-def test_normal_transit_not_flagged_grazing():
-    r = fit(fake_lc([1.3, 3.0, 0.15, 9.0, 0.3, 0.4, 0.2], 1e-3, seed=1))
-    g, g_err, sigma = pl.grazing_check(r)
+@pytest.mark.parametrize("prior", [None, (0.4, 0.2, 0.1)])
+def test_normal_transit_not_flagged_grazing(prior):
+    r = fit(fake_lc([1.3, 3.0, 0.15, 9.0, 0.3, 0.4, 0.2], 1e-3, seed=1), prior)
+    g, sigma = pl.grazing_check(r)
     assert sigma < 3
 
 
-@pytest.mark.xfail(reason="Known limitation (2026-11-24): with free limb darkening the "
-                          "fit can't tell grazing from high-b; b+k>1 test has ~no power")
-def test_grazing_transit_flagged():
-    r = fit(fake_lc([1.3, 3.0, 0.15, 9.0, 1.02, 0.4, 0.2], 2e-4, seed=2))
-    g, g_err, sigma = pl.grazing_check(r)
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_grazing_transit_flagged(seed):
+    """b + Rp/Rs = 1.17, 200 ppm, LD prior off by 0.1 (a realistic table error).
+    Profile method + prior: flagged in all 3 seeds in the 2026-11-24 simulations."""
+    r = fit(fake_lc([1.3, 3.0, 0.15, 9.0, 1.02, 0.4, 0.2], 2e-4, seed=seed), (0.5, 0.1, 0.1))
+    g, sigma = pl.grazing_check(r)
     assert sigma > 3
 
 
