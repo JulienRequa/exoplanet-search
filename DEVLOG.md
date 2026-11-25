@@ -325,3 +325,15 @@ was locked (commit 0217ed9) before the v2 improvements. Later pushes only at: th
   priors run: TOI 2554.01 caught → missed (odd/even 9.6σ → 2.2σ), as predicted.
 - Two planets (TOI 255.01, TOI 115.01) first hit MAST download timeouts (600 s) while several
   jobs ran at once; rerun → both PLANET CANDIDATE. Not code crashes; network.
+
+## 2026-11-24 (evening) — Ephemeris prototype vs criteria (prototype checkout, not in pipeline)
+- Bug found and fixed in the prototype: lightkurve BLS needs ≥ 2 trial periods; the per-sector
+  step failed silently and fell back to the old method (identical numbers exposed it).
+- Planets (hard case): correct period 33% → 70%; median |ΔP| 126 s → 0.7 s. Remaining 30% to be
+  split into "missed transits" vs "error bar too small" before deciding.
+- EBs at 2× catalog: caught 95%/100% → 100%/100% (secondary 60%/90%).
+- 13-planet regression: 12 runs unchanged (< 0.1σ). WASP-62: current-code run hit a MAST
+  timeout (rerun pending). WASP-33 b: ephemeris essentially identical (ΔP = 1e-6 d, Δt0 = 4 s)
+  but the fit moved to a different solution (Rp/Rs 0.1026 → 0.1091, b 0.15 → 0.10) — a fit with
+  more than one minimum on a pulsating (δ Scuti) host, like pi Men's fragility. Comparison with
+  the published value pending (NASA Exoplanet Archive returned a bot check tonight).
