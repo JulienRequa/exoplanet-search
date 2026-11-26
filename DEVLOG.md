@@ -670,3 +670,15 @@ a week during school, listing only the decisions Julien needs to make.
   Caveats in results/report_cards_2026-11-26/SUMMARY.md (wide Gaia eclipse widths make
   "can explain" permissive; size-flag cases not addressed by the phase-0.5 test).
 - Next: difference-image check on the 22 survivors (diagnostic; needs TESS pixel files).
+
+## 2026-11-26 — Release + difference images on the 22 survivors
+- GitHub Release hunt-v2-results-2026-11-26 published on main at 36ec26c (merge of PR #4; checked
+  before release: results and target md5 match, pipeline.py identical to v2-freeze).
+- Zenodo: the repository webhook received the release; "created" was accepted (202), but
+  "published"/"released" returned HTTP 500 from Zenodo. No Zenodo record found after ~15 min.
+  Pending: Julien to check the Zenodo GitHub page for the release's status.
+- Pushed b0bedc7, 99553a4, 9700e79 to new branch report-cards (with Julien's OK).
+- scripts/diffimage_check.py on the 22 survivors → results/diffimage_2026-11-26/ (SUMMARY.md).
+  Secondary-eclipse survivors with dimming on target: 7 (strongest group). Size: 4 on target (3
+  near the grazing degeneracy). Centroid: 3 on target (disagree with v2 centroid; method floor
+  unknown). Neighbour: unresolved or too weak.
