@@ -709,3 +709,30 @@ a week during school, listing only the decisions Julien needs to make.
   3200.01 (0.18″, Δ2.2), 3395.01 (0.09″, Δ1.5), 3709.01 (0.52″, Δ1.3–1.9). Difference images can't
   separate these; the planet-limit argument still holds but the eclipsing star is ambiguous.
   Details in private/ (not pushed).
+
+## 2026-11-26 — Extra TESS sectors and caveat checks for the 8 (diagnostic; v2 unchanged)
+- PR #5 merged (9e6e816). Pushed fab65fd to report-cards (this also pushed its parent 0cbf0de).
+- scripts/extra_sector_secondary.py: every TESS sector of each star (SPOC 2-min > TESS-SPOC FFI >
+  QLP), secondary measured per sector with the report-card method (local baseline, red-noise
+  null). Two fixes after the first run, both documented in the script header: QLP's own quality
+  flag (scattered-light glitches of 10⁴–10⁵ ppm in S34/S35), and a transit finder that searches
+  ±0.45 P (ExoFOP ephemeris had drifted ~0.8 d for 4694.01). First-run output is in the untracked
+  results/extra_sectors_2026-11-26/ (deletion was blocked by a safety check; superseded);
+  final results: results/extra_sectors_2026-11-26_r2/ (combined.csv).
+- Secondary in sectors NOT used by v2 (independent): 3265.01 1693 ± 238 ppm (7.1σ, 6/6 sectors
+  positive); 3200.01 767 ± 203 (3.8σ, 4/4); 4842.01 487 ± 171 (2.8σ, 4/4); 3395.01 588 ± 253
+  (2.3σ, 4/5); 4855.01 684 ± 293 (2.3σ, 4/5); 4694.01 1481 ± 801 (1.8σ, 2/2); 3709.01
+  1198 ± 756 (1.6σ, 2/2). All extra-sector depths remain far above each planet limit.
+  4273.01 (size flag) crashed after 3 QLP sectors (lightkurve table index error); its QLP
+  secondaries are −0.5 to −1.8σ (none).
+- scripts/caveat_checks.py → results/caveat_checks_2026-11-26/:
+  - 4694.01: b grid — b ≥ 0.9 all within Δχ² ≤ 1.2 of the best (1.2); b ≤ 0.8 disfavoured
+    (Δχ² ≥ 6.4). Planet limit 132 ppm at b = 0.9, 1,112 ppm at b = 1.2; combined secondary
+    2,447 ± 576 ppm is above both.
+  - 4855.01: depth vs aperture (corrected for expected dilution) rises from ~4.4k (1 px) to
+    ~5.9k ppm (3 px) in S62 — consistent with the ExoFOP "depth aperture correlation" comment;
+    could be contamination beyond ~1–2 px or the simple PSF model. Unresolved.
+  - 4273.01: dilution-corrected depth in small apertures ≈ 13.5–14.5k ppm (SPOC crowding
+    correction OK). Gaia DR3 radius 1.87 R☉ (GSP-Phot) / 2.18 (FLAME) vs TIC 2.23 → Rp 2.15–2.56
+    R_Jup: the size flag holds only for the larger radii; hot (Teff ≈ 6,860 K), irradiated host.
+    Not robust.
