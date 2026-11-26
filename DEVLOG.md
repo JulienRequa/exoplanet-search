@@ -761,3 +761,11 @@ a week during school, listing only the decisions Julien needs to make.
   beyond it (consistent with their v2 centroid flags); 3333.01 / 2904.01 (neighbour flags) beyond
   it; 6569.01 0.37 px beyond it; 4855.01 S63 0.23 px beyond it.
 - PAPER_NOTES M9 added. One-pagers updated (private).
+
+## 2026-11-26 — Off-target check for 6490.01 / 6045.01 (diagnostic)
+- Pushed 166fe68 to report-cards.
+- Gaia DR3 stars near the difference-image source positions (results/diffimage_2026-11-26/
+  offtarget_gaia.csv): no star at the measured offset (6490.01: 7.4″ NW; 6045.01: 4.0″ NE) is
+  bright enough to produce the observed depth (needed eclipse depths 540–1,200%). Bright-enough
+  neighbours lie 15–24″ away in other directions. → No "off-target source" category added; both
+  remain unresolved (6045.01 is at the floor; SG1 rules out deep eclipses on its neighbours).
