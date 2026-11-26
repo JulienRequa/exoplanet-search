@@ -682,3 +682,15 @@ a week during school, listing only the decisions Julien needs to make.
   Secondary-eclipse survivors with dimming on target: 7 (strongest group). Size: 4 on target (3
   near the grazing degeneracy). Centroid: 3 on target (disagree with v2 centroid; method floor
   unknown). Neighbour: unresolved or too weak.
+
+## 2026-11-26 — Zenodo retry; evidence summaries (internal)
+- Pushed 98b3285 and 2d22624 to report-cards (Julien's OK).
+- Re-release hunt-v2-results-2026-11-26-r2 on the same commit 36ec26c ("identical content"
+  line added). Zenodo webhook again: created 202, published/released HTTP 500; no Zenodo record
+  after 10 min. Zenodo's page shows the repo switch on but no releases. → Option B (manual upload).
+- Evidence summaries for 8 TOIs (4842.01, 4694.01, 3200.01, 3265.01, 3709.01, 3395.01, 4855.01,
+  4273.01) written to private/evidence_2026-11-26/ — git-ignored (new `private/` rule), never
+  pushed; nothing posted publicly without Julien's approval. Includes a planet-secondary upper
+  limit (albedo 1 + dayside thermal) per target. Notable: 3709.01 has a 0.52″ speckle companion
+  (source of the binary ambiguous); 3200.01 already has a public observing note doubting the
+  planet; 4855.01 ExoFOP comment "slight depth aperture correlation".
