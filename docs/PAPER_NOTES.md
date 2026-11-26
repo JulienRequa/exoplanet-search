@@ -171,6 +171,26 @@ blind rates do not capture, so ~22% may overestimate the true FP fraction.
 **Evidence.** results/hunt_v2_2026-11-25.csv; results/blind_v2_results_2026-11-25.csv.
 **Section.** results / discussion.
 
+### R5. Flagged candidates: tiers after diagnostics (2026-11-26; diagnostic, frozen v2 unchanged)
+**Finding.** Of the 105 strong fakes, 51 were checked (11 with no ground follow-up + 44 "new"
+minus overlap). Report cards (variability, nearby EBs) → 22 survivors; difference images →
+7 secondary-eclipse survivors with dimming on target, + 1 size case. After literature (ADS),
+ExoFOP companions, independent TESS sectors and caveat checks, the current tiers are:
+strong = **TOI 3265.01, 3200.01, 4842.01, 4694.01**; moderate = 3395.01, 3709.01; weak = 4855.01.
+Dropped: 4273.01 (radius straddles 2.5 R_Jup with Gaia vs TIC radii; hot star; no secondary).
+**Key evidence (independent sectors, not used by v2; local baseline, red-noise null).**
+Secondary eclipse: 3265.01 1,693 ± 238 ppm (7.1σ, 6/6 sectors positive); 3200.01 767 ± 203
+(3.8σ, 4/4); 4842.01 487 ± 171 (2.8σ, 4/4; all sectors 690 ± 135, 5.1σ); 4694.01 1,481 ± 801
+(1.8σ; all 2,447 ± 576, 4.3σ). Every depth is far above the largest secondary a planet could
+make (albedo 1 + dayside thermal: ~6–75 ppm; 4694.01 ≤ 1,112 ppm even at the grazing bound).
+**Caveats.** Close speckle companions (ExoFOP): 3265.01 0.18″ Δ0; 3200.01 0.18″ Δ2.2; 3395.01
+0.09″; 3709.01 0.52″ — the eclipsing star may be the companion (still not a planet on the
+target). 4842.01: depth in QLP sectors ~half of SPOC's. "On target" results pending the
+difference-image go/no-go (M9).
+**Evidence.** results/report_cards_2026-11-26/, results/diffimage_2026-11-26/,
+results/extra_sectors_2026-11-26_r2/, results/caveat_checks_2026-11-26/; DEVLOG.
+**Section.** results (flagged candidates).
+
 ---
 
 ## Limitations

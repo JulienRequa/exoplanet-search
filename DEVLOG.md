@@ -736,3 +736,15 @@ a week during school, listing only the decisions Julien needs to make.
     correction OK). Gaia DR3 radius 1.87 R☉ (GSP-Phot) / 2.18 (FLAME) vs TIC 2.23 → Rp 2.15–2.56
     R_Jup: the size flag holds only for the larger radii; hot (Teff ≈ 6,860 K), irradiated host.
     Not robust.
+
+## 2026-11-26 — Final tiers (Julien); difference-image go/no-go pre-registered
+- 4273.01 dropped from the strong list: "not robust: radius straddles the 2.5 R_Jup limit; hot
+  star; no secondary".
+- Tiers (diagnostic, for now): strong = 3265.01, 3200.01, 4842.01, 4694.01; moderate = 3395.01,
+  3709.01; weak = 4855.01. Key evidence: the secondary eclipse in independent sectors
+  (results/extra_sectors_2026-11-26_r2/combined.csv).
+- Pushed a19db60 to report-cards.
+- v3 difference-image go/no-go: scripts/diffimage_gonogo.py. Criteria written in its header
+  BEFORE running: dev3 planets (92 testable) + dev3 NEB controls; GO if ≥ 90% of detected planets
+  within 0.5 px AND ≤ 10% beyond 3σ; partial GO (empirical floor) if only accuracy passes;
+  else NO-GO. Dev data only; blind_v2 untouched.
