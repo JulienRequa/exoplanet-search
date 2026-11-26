@@ -748,3 +748,16 @@ a week during school, listing only the decisions Julien needs to make.
   BEFORE running: dev3 planets (92 testable) + dev3 NEB controls; GO if ≥ 90% of detected planets
   within 0.5 px AND ≤ 10% beyond 3σ; partial GO (empirical floor) if only accuracy passes;
   else NO-GO. Dev data only; blind_v2 untouched.
+
+## 2026-11-26 — Difference-image go/no-go result (rule committed in dfec5cf before the run)
+- dfec5cf pushed to report-cards during the run (commit made 22:20 UTC, before the run started;
+  the criteria file was not changed after).
+- Result (results/diffimage_gonogo_2026-11-26/GONOGO.md): 92 dev planets, 79 detected; accuracy
+  100% within 0.5 px (≥ 90% ✓); error calibration 29.1% beyond 3σ (≤ 10% ✗) → **PARTIAL GO: use
+  the empirical floor 0.19 px (4.0″)**. Median planet offset 0.09 px. NEB controls: 21 tried, 20
+  detected, 90% beyond the floor.
+- Floor applied to the 22 survivors (results/diffimage_2026-11-26/floor_applied.csv): the 4 strong
+  candidates are within the floor in every sector. 6490.01 (0.38 px) and 6045.01 (0.21 px) are
+  beyond it (consistent with their v2 centroid flags); 3333.01 / 2904.01 (neighbour flags) beyond
+  it; 6569.01 0.37 px beyond it; 4855.01 S63 0.23 px beyond it.
+- PAPER_NOTES M9 added. One-pagers updated (private).

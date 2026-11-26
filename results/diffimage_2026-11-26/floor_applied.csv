@@ -1,0 +1,29 @@
+TOI,sector,off_px,within_floor,flag
+6490.01,89,0.38,False,"centroid 12.5σ, source 1.06 px off"
+3333.01,66,0.28,False,"signal fits neighbour ([193782544, 5.982"
+3333.01,93,0.22,False,"signal fits neighbour ([193782544, 5.982"
+4842.01,88,0.17,True,"secondary eclipse 4.3σ, 29% of depth"
+2904.01,61,0.2,False,"signal fits neighbour ([267534574, 15.99"
+2904.01,62,0.3,False,"signal fits neighbour ([267534574, 15.99"
+5460.01,72,0.02,True,"centroid 30.7σ, source 1.35 px off"
+6569.01,100,0.37,False,"secondary eclipse 6.8σ, 30% of depth"
+4694.01,98,0.06,True,"secondary eclipse 5.5σ, 20% of depth"
+3200.01,65,0.09,True,"secondary eclipse 5.0σ, 12% of depth"
+3200.01,99,0.19,True,"secondary eclipse 5.0σ, 12% of depth"
+3265.01,67,0.15,True,"secondary eclipse 4.8σ, 19% of depth"
+3265.01,94,0.07,True,"secondary eclipse 4.8σ, 19% of depth"
+3709.01,59,0.07,True,"secondary eclipse 4.2σ, 11% of depth"
+3395.01,61,0.04,True,"secondary eclipse 4.0σ, 23% of depth"
+3395.01,87,0.13,True,"secondary eclipse 4.0σ, 23% of depth"
+6045.01,59,0.21,False,"centroid 3.2σ, source 1.07 px off"
+4855.01,62,0.11,True,"secondary eclipse 3.7σ, 22% of depth"
+4855.01,63,0.23,False,"secondary eclipse 3.7σ, 22% of depth"
+4273.01,63,0.07,True,size 2.7 R_Jup (b 0.62)
+4273.01,89,0.21,False,size 2.7 R_Jup (b 0.62)
+6527.01,89,0.16,True,size 3.7 R_Jup (b 1.09)
+2990.01,63,0.13,True,size 3.0 R_Jup (b 1.06)
+2990.01,90,0.2,False,size 3.0 R_Jup (b 1.06)
+3169.01,64,0.17,True,size 2.9 R_Jup (b 1.05)
+3169.01,99,0.13,True,size 2.9 R_Jup (b 1.05)
+4161.01,47,0.12,True,"signal fits neighbour ([743544785, 1.533"
+4161.01,53,0.18,True,"signal fits neighbour ([743544785, 1.533"

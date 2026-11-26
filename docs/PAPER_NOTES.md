@@ -115,6 +115,22 @@ secondary, centroid/offset, NEB, crowded, ...) applied to the TOI-table public c
 **Evidence.** scripts/hunt_compare.py (header); DEVLOG 2026-11-26.
 **Section.** methods (hunt).
 
+### M9. Difference-image positional accuracy on real data (v3 go/no-go)
+**Finding.** A per-transit difference image (local out-of-transit − in-transit, Gaussian-PSF fit)
+locates the dimming source very accurately on real TESS 2-min data, but its formal errors are
+too small, so an empirical floor must be used.
+**Numbers.** Dev sample 2 only (blind_v2 untouched); 92 known planets, 79 detected (S/N ≥ 5):
+100% within 0.5 px, median offset 0.09 px, 95th percentile **0.19 px (≈ 4″)**; 29% beyond 3σ
+(errors underestimated). Pre-registered rule (committed dfec5cf, 22:20 UTC 2026-11-26, before
+the run; pushed during the run) → **PARTIAL GO: use the 0.19 px floor**. NEB controls (dev FPs
+retired as NEB/offset): 20 detected, 90% beyond the floor.
+**Applied.** All 4 strong candidates: within the floor in every sector (dimming within ~4″).
+Two centroid-flag survivors (6490.01 0.38 px; 6045.01 0.21 px) are beyond the floor, consistent
+with v2's centroid flag; 5460.01 is within it.
+**Evidence.** scripts/diffimage_gonogo.py; results/diffimage_gonogo_2026-11-26/ (GONOGO.md,
+gonogo.csv); results/diffimage_2026-11-26/floor_applied.csv.
+**Section.** methods (v3) / results (flagged candidates).
+
 ---
 
 ## Results
