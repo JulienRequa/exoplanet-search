@@ -694,3 +694,18 @@ a week during school, listing only the decisions Julien needs to make.
   limit (albedo 1 + dayside thermal) per target. Notable: 3709.01 has a 0.52″ speckle companion
   (source of the binary ambiguous); 3200.01 already has a public observing note doubting the
   planet; 4855.01 ExoFOP comment "slight depth aperture correlation".
+
+## 2026-11-26 — README DOI PR; ADS literature search for the 8 (internal)
+- Zenodo record published by Julien (manual upload): DOI 10.5281/zenodo.24571362; checked public
+  record (title, author Requa Julien, MIT, version, isSupplementTo GitHub release, zip md5
+  f7f5351c6d39d1b42d8e2abbfa58fcb4). PR #5 (readme-doi): DOI badge, archived-release paragraph,
+  updated What's next, MIT LICENSE, `private/` in .gitignore.
+- scripts/ads_search.py (token read from ~/.ads/dev_key, never printed/committed): full-text
+  search for the 8 evidence-summary TOIs. No papers: 4842.01, 3709.01, 4694.01, 4855.01, 4273.01.
+  SOAR TESS Survey III (speckle) lists 3265.01, 3395.01, 3200.01 as observed targets; Karim et al.
+  2026 lists TIC 330014070 (3200.01) as a candidate solar-like oscillator. None mention a false
+  positive.
+- Found in ExoFOP (missed in the first draft): close speckle companions for 3265.01 (0.18″, Δ0),
+  3200.01 (0.18″, Δ2.2), 3395.01 (0.09″, Δ1.5), 3709.01 (0.52″, Δ1.3–1.9). Difference images can't
+  separate these; the planet-limit argument still holds but the eclipsing star is ambiguous.
+  Details in private/ (not pushed).
