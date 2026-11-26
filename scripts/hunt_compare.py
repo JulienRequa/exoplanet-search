@@ -75,6 +75,12 @@ if __name__ == "__main__":
     strong[["TOI", "star", "clear_reason", "strength"] + cols[2:]].to_csv(f"{outdir}/strong_fakes.csv", index=False)
     clean[cols + ["density_ratio", "oe_sigma"]].to_csv(f"{outdir}/clean_candidates.csv", index=False)
     oe_only[cols + ["oe_sigma"]].to_csv(f"{outdir}/oddeven_only.csv", index=False)
+    # Second ranking (Julien 2026-11-26): smallest radius first; flag, don't remove, Rp > 1.8 R_Jup.
+    # Targets without a stellar radius (rp_jup missing) go last.
+    by_r = clean.sort_values(["rp_jup", "snr"], ascending=[True, False], na_position="last").copy()
+    by_r["flag"] = ""
+    by_r.loc[by_r["rp_jup"] > 1.8, "flag"] = "large for a planet (possible brown dwarf / low-mass star)"
+    by_r[cols + ["density_ratio", "flag"]].to_csv(f"{outdir}/clean_candidates_by_radius.csv", index=False)
 
     print(f"targets {len(m)}, tested {len(tested)}, no data {m['error'].notna().sum()}")
     print(f"current ExoFOP status of all targets: {m['TFOPWG Disposition'].value_counts().to_dict()}")
