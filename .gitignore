@@ -4,3 +4,6 @@ __pycache__/
 .DS_Store
 .pytest_cache/
 cache/
+
+# Internal drafts, never pushed (evidence summaries before Julien approves posting)
+private/

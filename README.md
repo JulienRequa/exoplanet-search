@@ -1,5 +1,7 @@
 # Exoplanet Search with TESS
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24571362.svg)](https://doi.org/10.5281/zenodo.24571362)
+
 An open-source Python pipeline that checks NASA TESS planet candidates and flags the likely
 false positives. For each star it downloads the TESS light curve, finds the transit near the
 catalog period, fits a physical transit model, and runs eight vetting checks based on physics
@@ -35,6 +37,11 @@ pre-registered experiment:
 4. **Blind run once**, on the frozen code, reported as-is. Changes after that go to v3.
 
 The full record of every change, test and decision is in [DEVLOG.md](DEVLOG.md).
+
+**Archived release.** The hunt results (frozen v2, 2,896 TOIs) are archived on Zenodo as
+release `hunt-v2-results-2026-11-26`:
+[doi:10.5281/zenodo.24571362](https://doi.org/10.5281/zenodo.24571362)
+(zip md5 `f7f5351c6d39d1b42d8e2abbfa58fcb4`). Please cite this DOI when using these results.
 
 ## Results
 | | Real planets kept | False positives caught | Crashes |
@@ -78,12 +85,19 @@ Other tools:
 - `pytest`: unit tests
 
 ## What's next
-- **Hunting:** run v2 on ~2,900 open TESS planet candidates within the tested range (target list
-  snapshotted and pushed before the run).
-- **Hidden siblings:** search the same stars for additional, smaller planets (after
-  injection-recovery tests).
-- **v3:** difference-image centroids, detrending for spotted stars, multi-sector search,
-  a degeneracy-aware size check; tested on a fresh blind sample.
+- **Hunt: done.** Frozen v2 ran once on all 2,896 open TESS planet candidates in the tested
+  range (target list pushed before the run). Results are reported as-is in release
+  [`hunt-v2-results-2026-11-26`](https://github.com/JulienRequa/exoplanet-search/releases/tag/hunt-v2-results-2026-11-26),
+  archived at [doi:10.5281/zenodo.24571362](https://doi.org/10.5281/zenodo.24571362).
+- **Checking the flagged candidates:** diagnostic checks (variability, nearby eclipsing
+  binaries, difference images) on the targets v2 flags as likely false positives. These are
+  candidate flags only, not confirmed, and nothing is reported to ExoFOP before they are checked.
+- **Paper 1:** the v2 tool, its blind-test accuracy, the hunt, and the flagged candidates.
+- **v3:** difference-image centroids, detrending for spotted stars, multi-sector search, a
+  degeneracy-aware size check, and a secondary-eclipse check robust to stellar variability;
+  tested on a fresh blind sample. v3 never changes the v2 results above.
+- **Hidden siblings (paper 2):** search the same stars for additional, smaller planets with v3,
+  after injection-recovery tests.
 
 ## History
 v1 was built and tested in Google Colab. The original notebooks (as of the v1 test):
