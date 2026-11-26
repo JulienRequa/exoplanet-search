@@ -596,3 +596,41 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
   SPOC data (327 first pass + 172 after MAST errors); 0 mismatches.
 - PAPER_NOTES: M8 (listing rule written after the hunt, cutoffs from dev + blind only),
   R3 (hunt results), R4 (FP fraction ≈ 22%, formula and assumptions).
+
+## 2026-11-26 — New direction (Julien): two papers, protect the record, check flagged candidates
+**Goals.**
+- Paper 1 (draft over winter break): the v2 tool, blind-test accuracy, the 2,896-TOI hunt, the
+  false-positive fraction (~22%, 68% range 14–26%), and the headline: flagged candidates with
+  strong false-positive evidence not reported publicly (survivors from the 11 no-follow-up +
+  44 "new" strong fakes).
+- Paper 2 (weekends → spring): sibling search for new planets, powered by v3.
+- Paper 1 reports frozen v2 results exactly. v3 never changes paper 1's numbers; if v3 re-runs
+  the hunt, that is a separate result.
+
+**Priority 1 — protect the record (today).** Push 458dfd4 to PR #4 (Julien merges). After the
+merge: GitHub Release "hunt-v2-results-2026-11-26" on main (frozen v2, 2,896 TOIs, target-list
+fingerprint, results summary; strong-fake lists labelled "candidate false-positive flags,
+diagnostics pending; not confirmed"). Connect the repo to Zenodo (Julien logs in) for a DOI;
+add the DOI to the README.
+
+**Priority 2 — check the flagged candidates.** Diagnostic report cards for the 21 (11
+no-follow-up + top 10 "new"): folded transit, phase-0.5 secondary window, odd vs even,
+variability periodogram (orbital period and multiples marked), nearby Gaia/TIC stars within
+~2′ incl. known EBs; one-line assessment: survives (a) stellar variability / phase curve,
+(b) nearby-EB contamination? Sort: survives both / variability / contamination / unclear.
+Then the rest of the 55 in the background. For survivors only: targeted difference-image
+check (a diagnostic on those stars, not a v2 change). Evidence summary per survivor.
+Nothing is posted publicly until Julien approves.
+
+**Priority 3 — paper 1 prep.** Keep PAPER_NOTES current; start docs/paper1_outline.md
+(intro, related work, methods, validation, hunt results, flagged candidates, limitations,
+AI-use disclosure) with key numbers and evidence locations.
+
+**Background.** v3: difference-image go/no-go (real-data positional floor on known planets),
+then the multi-sector search with a noise-derived threshold. Added to the v3 list:
+secondary-eclipse check robust to phase curves; variability near the orbital period; nearby
+EBs. Paper 2 prep: refine docs/design_sibling_search.md; start the injection-recovery plan.
+
+**Rules (unchanged).** No tuning on test data; frozen v2 stays frozen; ask before installing,
+deleting or pushing; private info never in the repo; commit each step. Short summary 2–3 times
+a week during school, listing only the decisions Julien needs to make.
