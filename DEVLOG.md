@@ -546,3 +546,27 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
 - If they are investigated for v3, blind_v2 becomes v3 **development** data, and v3 gets a
   fresh blind sample (from the 367 unused matching FPs + unused planets, drawn and locked
   before any v3 change).
+
+## 2026-11-25/26 — Hunt v2 run (frozen pipeline.py = v2-freeze), reported as-is
+- Targets: data/hunt_v2_targets_2026-11-25.csv (2,896 PC TOIs, md5 684506ef9e006f93f19e50b695e3986f),
+  pushed before the run (PR #3). Runner scripts/hunt.py at f6bf99b (refuses to run unless pipeline.py
+  matches v2-freeze and the target md5 matches). Start 2026-11-25 09:36, done 2026-11-26 09:22.
+- Output: results/hunt_v2_2026-11-25.csv (md5 e492196843d641460e50569919ae1e7d) + .jsonl
+  (md5 a722304cd7df2de806e6a21aae36141e). Every check's status, text and numbers saved per target.
+- Interruptions: MAST downloads hung with no timeout (open socket, no data). First hang
+  14:40–20:19 (process alive, unnoticed). Then run under a watchdog that restarts the resumable
+  runner when the CSV has not grown for 30 min: 8 more restarts (worst 01:00–06:00). A restart
+  loses only the target in progress, which is redone from scratch; results are per-target and
+  seeded, so unaffected. Watchdog bug fixed 07:27 (stall timer now starts at the restart).
+- Results: tested 2,397; **no 2-minute data 499** (17%; download pass predicted 496 + 15 errors).
+  None of the 499 has any cached 2-min file. Verdicts: PLANET CANDIDATE 998, PC (some checks weak
+  or not run) 984, LIKELY FALSE POSITIVE 414, CANDIDATE WITH WARNINGS 1. Crashes 0.
+- v3 recheck list (FAIL on odd/even only): **95** (3.0–15.9σ, median 3.7σ).
+- ExoFOP comparison: scripts/hunt_compare.py against data/toi_2026-11-26.csv (fresh download,
+  md5 03cf519fbb28cacc2cc205a0606e7e4b; dispositions and comments identical to 2026-11-24 for
+  all TOIs; all 2,896 targets still PC). Uses the TOI-table public comment only (not per-target
+  ExoFOP notes). Listing rules (not vetting thresholds) are in the script header: "clear" FAILs
+  are ones no known planet in dev or blind ever got (secondary eclipse, centroid, neighbour
+  depth, odd/even ≥ 6σ, size with b < 1.15). Strong fakes: **105**. Clean candidates (all checks
+  PASS, no flag in the ExoFOP comment): **854**. Files: results/hunt_v2_compare_2026-11-26/.
+- Next hunt: download first with per-download time limits, analyse offline, watchdog from the start.
