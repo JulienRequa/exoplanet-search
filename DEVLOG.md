@@ -634,3 +634,16 @@ EBs. Paper 2 prep: refine docs/design_sibling_search.md; start the injection-rec
 **Rules (unchanged).** No tuning on test data; frozen v2 stays frozen; ask before installing,
 deleting or pushing; private info never in the repo; commit each step. Short summary 2–3 times
 a week during school, listing only the decisions Julien needs to make.
+
+## 2026-11-26 — Report cards, first 21 flagged candidates (diagnostic; v2 unchanged)
+- scripts/report_cards.py (rules in header, written before any card was run): local-baseline
+  secondary and odd/even with a red-noise null (200 random phases, seed 0); Lomb–Scargle of the
+  un-flattened light curve; phase-curve terms; TIC stars ≤ 2′; known EBs/variables ≤ 2′ (VSX,
+  Gaia DR3 EBs, TESS EB catalog; VizieR CfA mirror).
+- Result (rule): survives both 7, contamination 4, variability 9, unclear 1. Details and
+  judgement notes: results/report_cards_2026-11-26/SUMMARY.md. Two rule outcomes are flagged for
+  Julien's decision (3 "contamination" cases where the nearby EB has an unrelated period; 6435.01
+  odd/even looks like a 2× period alias).
+- v2 secondary-eclipse fragility recorded as PAPER_NOTES L5.
+- docs/paper1_outline.md started. Remaining 30 "new" strong fakes running in the background
+  (the 55 = 11 + 44 overlap by 4, so 51 unique).

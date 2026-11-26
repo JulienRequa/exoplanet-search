@@ -211,3 +211,15 @@ misalign transits and push the odd/even test over its threshold.
 borderline. Related: HATS-64 b also lost at 3.1σ (no TTVs known; statistical/systematic).
 **Evidence.** results/devfull200_v2final_2026-11-24.csv; DEVLOG 2026-11-24/25.
 **Section.** limitations (→ future: per-transit times, which also feed the sibling search).
+
+### L5. v2's secondary-eclipse check is fragile against stellar variability
+**Finding.** The v2 secondary-eclipse test uses white-noise errors and a wide baseline
+(|phase − 0.5| < 0.25). Variability or a phase curve at P or P/2 can produce a "secondary" that
+disappears when the depth is measured against a local baseline with a red-noise null.
+**Numbers.** Report cards (first 21 flagged): 9 of 13 secondary-eclipse flags not robust
+(local red-noise significance < 3σ), e.g. TOI 5684.01: v2 36.9σ → 1.4σ; the target is a VSX
+RS CVn variable with a 1.084 d periodicity (P = 1.100 d). Implication: some v2 FP catches by
+secondary eclipse (blind: 14) may be right for the wrong reason; to be examined as v3 work
+(blind_v2 would then become v3 dev data, per the 2026-11-25 rule).
+**Evidence.** results/report_cards_2026-11-26/ (SUMMARY.md, report_cards.csv); scripts/report_cards.py.
+**Section.** limitations (→ v3: secondary check robust to phase curves and variability).
