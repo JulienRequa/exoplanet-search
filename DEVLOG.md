@@ -647,3 +647,26 @@ a week during school, listing only the decisions Julien needs to make.
 - v2 secondary-eclipse fragility recorded as PAPER_NOTES L5.
 - docs/paper1_outline.md started. Remaining 30 "new" strong fakes running in the background
   (the 55 = 11 + 44 overlap by 4, so 51 unique).
+
+## 2026-11-26 — Decisions on the first report cards (Julien)
+1. 4842.01, 6569.01, 3115.01: keep the original "contamination" label in the record, and add a
+   test: using the nearby binary's catalogued period and epoch, can its eclipses fall at our
+   observed secondary times in both sectors? If not → "survives" (test documented); if yes →
+   stays contamination. Same test for all similar cases in the remaining 30.
+2. 6435.01 → unclear. Note: likely period alias (true period ~12.2 d); report to ExoFOP later as
+   a period correction (only with Julien's approval).
+3. PAPER_NOTES R4: the ~22% may include secondary-eclipse false alarms on variable hunt stars
+   (added next to the estimate).
+4. After survivors are final: difference-image check on each.
+- Zenodo: author name "Julien Requa" OK. OK to push the three local commits on a new branch after
+  PR #4 is merged.
+
+## 2026-11-26 — All 51 report cards + nearby-EB timing test
+- Remaining 30 cards done (same script/rules). Rule outcomes (all 51): survives both 21,
+  variability 20, contamination 8, unclear 2 — kept as recorded in report_cards.csv.
+- scripts/neb_timing_test.py (decision rule in header, written before running): 4842.01 and
+  6569.01 → survives; 3115.01 stays contamination. 6435.01 → unclear (period alias note).
+- Final (report_cards_final.csv): survives both 22, variability 20, contamination 6, unclear 3.
+  Caveats in results/report_cards_2026-11-26/SUMMARY.md (wide Gaia eclipse widths make
+  "can explain" permissive; size-flag cases not addressed by the phase-0.5 test).
+- Next: difference-image check on the 22 survivors (diagnostic; needs TESS pixel files).

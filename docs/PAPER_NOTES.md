@@ -164,6 +164,10 @@ fainter, many from the faint-star QLP search); (2) only testable targets count (
 period-mismatch excluded, as in the blind rates); (3) "weak / not run" verdicts count as not
 rejected; (4) targets are independent. If (1) fails the estimate is biased; treat ~22% as a
 rough estimate, not a measurement.
+**Caveat (2026-11-26).** The 414 rejections include secondary-eclipse flags, and the report cards
+(L5) show many of those are false alarms on variable stars (9 of 13 in the first 21 flagged).
+If hunt stars are more variable than the blind sample, r is inflated by false alarms that the
+blind rates do not capture, so ~22% may overestimate the true FP fraction.
 **Evidence.** results/hunt_v2_2026-11-25.csv; results/blind_v2_results_2026-11-25.csv.
 **Section.** results / discussion.
 
