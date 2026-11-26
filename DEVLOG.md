@@ -592,7 +592,7 @@ Thursday: full ~300-star rerun (93 + 200) → bar check → freeze → push (tag
     overlapping); new 44 (40 of them already have ground follow-up without an FP finding).
   - Not covered: Lafarga et al. 2026 is the RAVEN catalog (one source); other papers were not
     searched systematically; ExoFOP comments are free text.
-- No-data recheck (fresh MAST queries, 60 s timeout): 327/499 confirmed no 2-min data, 0 found
-  with data; 172 hit MAST errors and are being retried.
+- No-data recheck (fresh MAST queries, 60–90 s timeout, retries): all 499 confirmed no 2-min
+  SPOC data (327 first pass + 172 after MAST errors); 0 mismatches.
 - PAPER_NOTES: M8 (listing rule written after the hunt, cutoffs from dev + blind only),
   R3 (hunt results), R4 (FP fraction ≈ 22%, formula and assumptions).
