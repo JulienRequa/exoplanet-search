@@ -103,6 +103,18 @@ be the grazing branch of the b–Rp/Rs degeneracy.
 **Evidence.** commit e216703; DEVLOG 2026-11-24/25.
 **Section.** methods.
 
+### M8. Strong-fake listing rule: written after the hunt, cutoffs from dev + blind only
+**Finding.** The rule that turns hunt rejections into a short "strong fake" list (and the
+"clean candidate" list) was written on 2026-11-26, *after* the hunt verdicts existed. To keep it
+from being tuned on hunt results, every cutoff comes only from the dev (124 planets) and blind
+(99 planets) samples: a "clear" FAIL is one no known planet ever received — secondary eclipse,
+centroid, neighbour depth, odd/even ≥ 6σ (largest known-planet loss 5.2σ, TOI-837 b), and planet
+size only when b < 1.15 (both size losses had b = 1.2). The rule only sorts and filters; no
+vetting threshold changed. ExoFOP comment filter: a keyword list (EB, V-shape, odd/even,
+secondary, centroid/offset, NEB, crowded, ...) applied to the TOI-table public comment.
+**Evidence.** scripts/hunt_compare.py (header); DEVLOG 2026-11-26.
+**Section.** methods (hunt).
+
 ---
 
 ## Results
@@ -124,6 +136,36 @@ PASS), e.g. HATS-59 b (period 0.06% off). Remaining: 5 period-search, 2 proper-m
 **Evidence.** results/devset_v3sample_2026-11-24.csv;
 results/devset_v3sample_lost_rerun_timingfix_2026-11-24.csv; DEVLOG.
 **Section.** results (development) / methods motivation.
+
+### R3. Hunt v2: 2,896 open TESS planet candidates (frozen v2)
+**Finding.** v2 run once, as-is, on every open PC TOI in the tested range.
+**Numbers.** 2,896 TOIs (2,891 stars); no 2-minute data 499 (17%); tested 2,397; crashes 0.
+Verdicts: PLANET CANDIDATE 998, PC with weak / not-run checks 984, LIKELY FALSE POSITIVE 414
+(17.3% of tested), with warnings 1. Failed only odd/even (v3 recheck list): 95. Strong fakes
+(rule M8, no matching ExoFOP comment): 105; clean candidates: 854 (96 of them > 1.8 R_Jup,
+flagged as possible brown dwarfs / low-mass stars).
+**Evidence.** results/hunt_v2_2026-11-25.csv (md5 e492196843d641460e50569919ae1e7d), target list
+md5 684506ef9e006f93f19e50b695e3986f (pushed before the run), results/hunt_v2_compare_2026-11-26/,
+ExoFOP snapshot data/toi_2026-11-26.csv; DEVLOG.
+**Section.** results.
+
+### R4. Estimated false-positive fraction among the hunt's planet candidates: ~22%
+**Finding.** The fraction of rejected targets is a mix of real FPs caught and real planets lost.
+Correcting with the blind-test rates gives the underlying FP fraction f.
+**Formula.** Observed rejection rate r = f·c + (1 − f)·(1 − k), so
+f = (r − (1 − k)) / (c − (1 − k)), where c = blind FP catch rate, k = blind planet keep rate.
+**Numbers.** r = 414/2397 = 0.173, c = 43/85 = 0.506, k = 91/99 = 0.919 → **f = 0.216**.
+Uncertainty (binomial/Beta draws on r, c, k; 200,000 draws, seed 0): median 0.21, 68% range
+0.14–0.26, 95% range 0.06–0.32 — dominated by the blind sample sizes (85 FPs, 99 planets).
+**Assumptions.** (1) c and k measured on blind_v2 apply to the hunt targets — i.e. the hunt's
+real FPs are like TFOPWG-dispositioned FPs (which may be the easier, already-resolved kinds) and
+its real planets are like confirmed/known planets (often bright hot Jupiters; hunt stars are
+fainter, many from the faint-star QLP search); (2) only testable targets count (no-data and
+period-mismatch excluded, as in the blind rates); (3) "weak / not run" verdicts count as not
+rejected; (4) targets are independent. If (1) fails the estimate is biased; treat ~22% as a
+rough estimate, not a measurement.
+**Evidence.** results/hunt_v2_2026-11-25.csv; results/blind_v2_results_2026-11-25.csv.
+**Section.** results / discussion.
 
 ---
 
