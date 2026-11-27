@@ -278,10 +278,18 @@ transit-duration timescales does not, so the SNR is inflated on stars with red n
 weakness the v2 odd/even fix (M2) addressed for that test.
 **Numbers.** Threshold simulation (sims/multisector_threshold_sim_results_2026-11-27.md; assumed
 red noise AR(1), 1 h, 50% of white): pure noise exceeds SNR 7.1 in 17–18% of stars with white
-noise and in 100% with white + red noise. The SNR 7.1 check therefore rejects fewer false
-alarms on red-noise stars than its number suggests. The red-noise level in that simulation was
-assumed, not measured; the real level on dev-set light curves is being measured (v3 work).
+noise and in 100% with white + red noise (assumed level). The SNR 7.1 check therefore rejects
+fewer false alarms on red-noise stars than its number suggests.
+**Measured level (2026-11-27).** Red noise measured on 250 dev-set light curves (never blind_v2;
+results/rednoise_dev_2026-11-27/SUMMARY.md), as beta = scatter of 2-hour bin means ÷ the
+white-noise expectation: median 1.00, 90th percentile 1.61 (a heavy tail: 95th 2.8). In the
+simulation these match red noise of 9% (typical) and 29% (90th percentile) of the white noise;
+the assumed 50% was stronger than 90% of real dev stars. At these levels pure noise exceeds SNR
+7.1 in 39–43% of stars (typical) and 99.5–99.9% (90th percentile)
+(sims/rednoise_threshold_measured_levels_2026-11-27.md). A red-noise-aware SNR was tried for v3
+and failed its pre-registered validation (docs/PAPER2_NOTES.md R1).
 **Implication for paper 1.** v2 numbers are unchanged (frozen); the SNR check should be described
 as a white-noise SNR, and its pass rate not read as a false-alarm rate.
-**Evidence.** pipeline.py vet_star (SNR line); sims/multisector_threshold_sim.py; results/multisector_threshold_sim_2026-11-27.csv.
-**Section.** limitations (→ v3: red-noise-aware SNR, docs/v3_list.md).
+**Evidence.** pipeline.py vet_star (SNR line); sims/multisector_threshold_sim.py; results/multisector_threshold_sim_2026-11-27.csv;
+results/rednoise_dev_2026-11-27/; sims/rednoise_threshold_measured_levels_2026-11-27.md.
+**Section.** limitations (→ v3: threshold calibrated at the measured level, two-tier for noisy stars; docs/v3_list.md).

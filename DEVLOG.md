@@ -852,3 +852,21 @@ a week during school, listing only the decisions Julien needs to make.
 - Threshold at the measured levels (sims/rednoise_threshold_measured_levels_2026-11-27.md),
   FAR 1%, v2-style SNR: white 8.38 / 8.15 (2 / 4 sectors; faint planets kept 93% / 99%);
   typical 9.12 / 9.22 (91% / 98%); pessimistic 16.3 / 17.2 (60% / 74%). FAR choice: Julien.
+
+## 2026-11-27 (afternoon) — Julien's decisions on the threshold and red noise
+- Provisional v3 multi-sector threshold: FAR 1% (SNR ≈ 9.1–9.2 at the typical measured level).
+  Target 0.25%, only after a larger noise-only run. Pre-registered and committed first (b7786d5):
+  sims/large_noise_threshold_sim.py, 10,000 noise stars + 1,000 faint planets per setup
+  (2 / 4 sectors × white / typical red alpha 0.091), new seeds ≥ 50,000,000. "Enough false alarms"
+  at 0.25% = ≥ 20 noise stars above the threshold and bootstrap 95% interval ≤ 1.0 SNR wide; else
+  extend by 10,000. Proposed number = higher of 2 / 4 sectors, rounded up to 0.1. Running
+  overnight (6 CPU workers) → results/large_noise_threshold_2026-11-27.csv.
+- Failed red-noise-aware SNR recorded as a result: docs/PAPER2_NOTES.md R1 (new file for paper 2
+  notes): rules V1–V3, verdict FAIL (V1 pass, V2 +83% / +79%, V3 30% / 37%), what it fixed
+  (gap +240% → ~+80%), likely causes (maximum over many trial phases; estimator reads ~0.90 on
+  white noise). Not adopted.
+- PAPER_NOTES L6 updated with the measured dev red noise (beta_2h median 1.00, 90th pct 1.61;
+  FAR at SNR 7.1: 39–43% typical, 99.5–99.9% at the 90th pct).
+- Two-tier threshold for noisy stars: design note docs/design_two_tier_threshold.md (NOT run;
+  waiting for Julien). Proposes tiers by each star's beta_2h: ≤ 1.15 normal, 1.15–2.0 strict, > 2.0
+  no claim (8% of dev stars; needs Julien's OK since it is a third bucket).

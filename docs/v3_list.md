@@ -30,3 +30,7 @@ Added 2026-11-27 (Julien):
   transit-length bins), validated on the threshold simulation; then measure the real red-noise
   level on dev-set light curves (never blind_v2) and rerun the threshold simulation at that level.
   Julien chooses the false-alarm rate from those results. (PAPER_NOTES L6.)
+  Outcome 2026-11-27: the red-noise-aware SNR FAILED validation, not adopted (PAPER2_NOTES R1).
+  Julien: provisional multi-sector threshold at FAR 1% (SNR ≈ 9.1–9.2, typical level); target
+  0.25% after a 10,000-star-per-setup run (sims/large_noise_threshold_sim.py); noisiest stars by a
+  two-tier threshold on each star's measured beta (docs/design_two_tier_threshold.md, design only).
