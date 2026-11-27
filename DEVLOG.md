@@ -769,3 +769,28 @@ a week during school, listing only the decisions Julien needs to make.
   bright enough to produce the observed depth (needed eclipse depths 540–1,200%). Bright-enough
   neighbours lie 15–24″ away in other directions. → No "off-target source" category added; both
   remain unresolved (6045.01 is at the floor; SG1 rules out deep eclipses on its neighbours).
+
+## 2026-11-26 — Expert-review checks for the 4 strong candidates (diagnostic; v2 unchanged)
+- scripts/review_checks.py → results/review_checks_2026-11-26/ (method + catalogue densities in
+  the header).
+  - Density/duration (b grid, since v2's a/Rs–b covariance errors are huge; v2's own density
+    check did not run for 3265.01/3200.01/4842.01 for lack of catalogue values, WEAK for 4694.01):
+    4842.01 — transit ρ* ≥ 0.34 g/cm³ at any b (Δχ² ≤ 1.3 across b) vs catalogue 0.05–0.13
+    (giant; TIC R 3.0, Gaia parallax → R ≈ 2.4); expected T14 ≈ 8.6 h vs 2.35 h → strong mismatch
+    (Julien's numbers confirmed at b = 0: 3.98). 3200.01 — ρ* ≥ 0.88 vs 0.25–0.76 → mild (1.2–3.5×).
+    4694.01 — ρ* ≥ 0.82 vs 0.41–0.55 → mild (1.5–2×). 3265.01 — consistent at b ≥ 0.95.
+  - Ellipsoidal per sector (trend terms included): none significant. 4694.01 −667 ± 389 ppm (1.7σ,
+    right phase); earlier ~900 ppm came from a fit without trends → not counted as support or
+    caveat. 4842.01 +103 ± 147 vs ≥ 1,160 expected for a stellar companion of the giant → rules out
+    a star orbiting the giant.
+  - Secondary vs a companion of size k·R1 on the target: 4842.01 needs Teff ≈ 4,300 K (R ≈ 0.7) vs
+    0.10–0.12 R☉ allowed → blended EB; 3265.01 likewise (≈ 4,200 K vs 0.09–0.12) → blended EB;
+    3200.01 consistent with an M dwarf (~3,100 K, ~0.2 R☉; predicted ~750 vs observed 824 ppm) →
+    EB on target; 4694.01 not applicable (grazing).
+  - 4842.01 QLP vs SPOC secondary: 1.9σ difference (noise); dilution explanation withdrawn.
+  - 3200.01 Gaia RUWE 15.6 (unresolved binary); 3265.01 no Gaia parallax solution.
+  - 4694.01 neighbour TIC 50745125 (Tmag 10.94) 62″ = 3.1 px ESE; dimming on the target (0.06 px).
+- report_cards.py: optional two-step label (final_label); the 4 cards regenerated in
+  results/report_cards_2026-11-26_v2labels/ (numbers identical to the originals; only 4842.01's
+  label changed: "Initial rule: CONTAMINATION → Final: SURVIVES (timing test)").
+- Private: one-pager v2 texts and strong_candidates_review_v2.pdf (v1 kept).

@@ -143,7 +143,7 @@ def period_match(p, P):
     return np.isfinite(p) and any(abs(p / (m * P) - 1) < 0.01 for m in (0.5, 1, 2))
 
 
-def card(toi, hunt, strong, outdir, rng):
+def card(toi, hunt, strong, outdir, rng, final_label=None):
     h = hunt[hunt.TOI == toi].iloc[0]
     s = strong[strong.TOI == toi].iloc[0]
     tic = int(str(h.star).split()[-1])
@@ -304,7 +304,8 @@ def card(toi, hunt, strong, outdir, rng):
     txt = [f"TOI {toi:.2f}  TIC {tic}  P = {P:.5f} d  depth ≈ {depth*1e6:.0f} ppm  T14 = {D*24:.1f} h",
            f"v2 flag: {reasons}", f"group: {s.group}", "", "(a) variability / phase curve:"] + \
           ["   " + x for x in a_parts] + ["", "(b) nearby EB:"] + ["   " + x for x in b_parts] + \
-          ["", f"ASSESSMENT: {cat.upper()}"] + ([f"catalog errors: {kv_err} {tic_err}"] if (kv_err or tic_err) else [])
+          (["", f"ASSESSMENT: {cat.upper()}"] if not final_label else
+           ["", f"ASSESSMENT — Initial rule: {cat.upper()}", f"   → Final: {final_label}"]) + ([f"catalog errors: {kv_err} {tic_err}"] if (kv_err or tic_err) else [])
     import textwrap
     wrapped = []
     for line in txt:

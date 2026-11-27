@@ -203,6 +203,13 @@ make (albedo 1 + dayside thermal: ~6–75 ppm; 4694.01 ≤ 1,112 ppm even at the
 0.09″; 3709.01 0.52″ — the eclipsing star may be the companion (still not a planet on the
 target). 4842.01: depth in QLP sectors ~half of SPOC's. "On target" results pending the
 difference-image go/no-go (M9).
+**Physical consistency (review checks).** 4842.01: transit density ≥ 0.34 g/cm³ at any impact
+parameter vs ~0.05–0.13 for the giant host; no ellipsoidal signal (< 400 ppm vs ≥ 1,160 expected for
+a stellar companion of the giant); secondary needs a ~4,300 K companion but only ~0.1 R☉ fits →
+blended EB. 3265.01: secondary likewise too bright for a companion of the allowed size → blended
+EB (equal-brightness 0.18″ companion). 3200.01: consistent with an M dwarf (~0.2 R☉, ~3,100 K)
+eclipsing the target (predicted ~750 vs 824 ppm); Gaia RUWE 15.6. 4694.01: density 1.5–2× high;
+ellipsoidal 1.7σ (not counted). results/review_checks_2026-11-26/.
 **Evidence.** results/report_cards_2026-11-26/, results/diffimage_2026-11-26/,
 results/extra_sectors_2026-11-26_r2/, results/caveat_checks_2026-11-26/; DEVLOG.
 **Section.** results (flagged candidates).
