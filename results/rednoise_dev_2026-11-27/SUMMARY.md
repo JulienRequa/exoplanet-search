@@ -1,6 +1,6 @@
 # Real red noise on dev light curves (2026-11-27; dev only, no blind_v2 star)
 
-- Stars: 251 attempted, 250 measured, 0 errors. Median point scatter 3107 ppm.
+- Stars: 251 attempted, 250 measured (1 had too few full 2-h bins; no download errors). Median point scatter 3107 ppm.
 - beta_1h: median 1.02, 16–84% 0.96–1.25, 90th pct 1.49
 - beta_2h: median 1.00, 16–84% 0.91–1.29, 90th pct 1.61
 - beta_3h: median 0.97, 16–84% 0.86–1.39, 90th pct 1.71
