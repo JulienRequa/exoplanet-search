@@ -270,3 +270,18 @@ secondary eclipse (blind: 14) may be right for the wrong reason; to be examined 
 (blind_v2 would then become v3 dev data, per the 2026-11-25 rule).
 **Evidence.** results/report_cards_2026-11-26/ (SUMMARY.md, report_cards.csv); scripts/report_cards.py.
 **Section.** limitations (→ v3: secondary check robust to phase curves and variability).
+
+### L6. v2's detection SNR assumes white noise
+**Finding.** v2's detection SNR is depth ÷ (out-of-transit point scatter / √N in-transit points).
+This assumes the noise averages down like white noise. Time-correlated ("red") noise on
+transit-duration timescales does not, so the SNR is inflated on stars with red noise, the same
+weakness the v2 odd/even fix (M2) addressed for that test.
+**Numbers.** Threshold simulation (sims/multisector_threshold_sim_results_2026-11-27.md; assumed
+red noise AR(1), 1 h, 50% of white): pure noise exceeds SNR 7.1 in 17–18% of stars with white
+noise and in 100% with white + red noise. The SNR 7.1 check therefore rejects fewer false
+alarms on red-noise stars than its number suggests. The red-noise level in that simulation was
+assumed, not measured; the real level on dev-set light curves is being measured (v3 work).
+**Implication for paper 1.** v2 numbers are unchanged (frozen); the SNR check should be described
+as a white-noise SNR, and its pass rate not read as a false-alarm rate.
+**Evidence.** pipeline.py vet_star (SNR line); sims/multisector_threshold_sim.py; results/multisector_threshold_sim_2026-11-27.csv.
+**Section.** limitations (→ v3: red-noise-aware SNR, docs/v3_list.md).

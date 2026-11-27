@@ -24,3 +24,9 @@ Added 2026-11-26 (Julien):
   tested hunt targets, 16%), and (2) fall back to Gaia DR3 (GSP-Phot / FLAME radius and mass) or
   TIC radius/mass where available. Also: use a b-profile rather than covariance errors when b is
   unconstrained (the 4 strong candidates had density errors of 100–1,000%).
+
+Added 2026-11-27 (Julien):
+- Detection SNR red-noise aware: Pont et al. (2006) time-averaging (noise measured in
+  transit-length bins), validated on the threshold simulation; then measure the real red-noise
+  level on dev-set light curves (never blind_v2) and rerun the threshold simulation at that level.
+  Julien chooses the false-alarm rate from those results. (PAPER_NOTES L6.)
