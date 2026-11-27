@@ -839,3 +839,16 @@ a week during school, listing only the decisions Julien needs to make.
   report-cards; checked first). Kept: main, report-cards, tags v2-freeze (46b253d, in main) and
   hunt-v2-results-2026-11-26 / -r2 (36ec26c, in main). All 37 commit hashes named in DEVLOG are
   reachable from GitHub main or report-cards.
+
+## 2026-11-27 (midday) — red-noise results
+- Real red noise on 250 dev stars (results/rednoise_dev_2026-11-27/SUMMARY.md): beta at 2 h bins
+  median 1.00, 90th percentile 1.61 → simulation alpha 0.091 (typical) / 0.292 (pessimistic), by
+  the pre-registered mapping. The earlier assumed alpha 0.5 was stronger than the dev 90th pct.
+- Red-noise-aware SNR validation (alpha 0.5; same 5,000 stars, snr_white reproduces the earlier
+  run exactly): **FAIL** by the pre-registered rule. V1 pass (no white-noise penalty); V2 fail
+  (FAR-1% threshold red vs white +83% / +79%; was +240%); V3 fail (30% / 37% false alarms at the
+  white threshold). Not adopted. Likely cause (not tested): the search keeps the deepest dip over
+  many trial phases, which red noise makes worse than the average-bin beta captures.
+- Threshold at the measured levels (sims/rednoise_threshold_measured_levels_2026-11-27.md),
+  FAR 1%, v2-style SNR: white 8.38 / 8.15 (2 / 4 sectors; faint planets kept 93% / 99%);
+  typical 9.12 / 9.22 (91% / 98%); pessimistic 16.3 / 17.2 (60% / 74%). FAR choice: Julien.
