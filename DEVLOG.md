@@ -809,3 +809,13 @@ a week during school, listing only the decisions Julien needs to make.
   planets. Reports thresholds at FAR 5% / 1% / 0.25%; which FAR to adopt is Julien's decision.
   (Nov 24 prototype: noise passes SNR 7.1 in 8% (2 sectors) / 18% (4 sectors), white noise only.)
 - CPU only, no downloads (disk at 7.7 GB free, below the 8 GB floor).
+
+## 2026-11-27 (morning) — multi-sector threshold simulation finished
+- 5,000 simulated stars, no crashes. Results: sims/multisector_threshold_sim_results_2026-11-27.md;
+  per-star CSV results/multisector_threshold_sim_2026-11-27.csv.
+- White noise: SNR 7.1 → 17–18% false alarms. 1% FAR needs SNR 8.38 (2 sectors) / 8.15 (4);
+  faint planets kept 93% / 99%.
+- White + red noise (assumed level, not measured): 100% false alarms at 7.1; 1% FAR needs ~29;
+  faint planets kept 18% / 44%. The v2-style SNR ignores correlated noise.
+- No threshold adopted. Decision for Julien: measure real red noise on dev data, and/or make the
+  v3 SNR red-noise aware, then re-run.
