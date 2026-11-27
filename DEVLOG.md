@@ -833,3 +833,9 @@ a week during school, listing only the decisions Julien needs to make.
 - Red noise, step 2: scripts/measure_rednoise_dev.py on 251 dev stars (dev3 + dev2/v1/known; no
   blind_v2 star, asserted), plus sim alpha calibration; level choice pre-registered (median and
   90th-percentile beta at 2 h bins).
+- Branch cleanup (approved): local report-cards created at the current commit, tracking
+  origin/report-cards (4 local commits ahead, unpushed). Deleted locally and on GitHub:
+  hunt-v2-results, hunt-prep, readme-doi, readme-v2, v2-vetting (all contained in main or
+  report-cards; checked first). Kept: main, report-cards, tags v2-freeze (46b253d, in main) and
+  hunt-v2-results-2026-11-26 / -r2 (36ec26c, in main). All 37 commit hashes named in DEVLOG are
+  reachable from GitHub main or report-cards.
