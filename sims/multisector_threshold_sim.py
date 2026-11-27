@@ -25,7 +25,9 @@ import numpy as np
 import pandas as pd
 import lightkurve as lk
 import pipeline as pl
+_argv, sys.argv = sys.argv, sys.argv[:1]   # the prototype reads sys.argv[1] at import time
 from multisector_search_sim import multi, snr, sector, STARTS
+sys.argv = _argv
 
 N_NOISE, N_PLANET = 1000, 250
 
