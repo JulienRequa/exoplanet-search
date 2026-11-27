@@ -794,3 +794,10 @@ a week during school, listing only the decisions Julien needs to make.
   results/report_cards_2026-11-26_v2labels/ (numbers identical to the originals; only 4842.01's
   label changed: "Initial rule: CONTAMINATION → Final: SURVIVES (timing test)").
 - Private: one-pager v2 texts and strong_candidates_review_v2.pdf (v1 kept).
+
+## 2026-11-26 — v3 list doc
+- Pushed 56fb856 to report-cards.
+- docs/v3_list.md started (living v3 list; v2's frozen list + additions). New item (Julien):
+  density check must report when it can't run (own status) and fall back to Gaia/TIC radius and
+  mass. Finding: in the hunt, v2 left the density status blank with detail "no catalog data" for
+  388 of 2,397 tested targets (16%); 324 of these ended as "PC (some checks weak or not run)".
