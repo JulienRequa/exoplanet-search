@@ -801,3 +801,11 @@ a week during school, listing only the decisions Julien needs to make.
   density check must report when it can't run (own status) and fall back to Gaia/TIC radius and
   mass. Finding: in the hunt, v2 left the density status blank with detail "no catalog data" for
   388 of 2,397 tested targets (16%); 324 of these ended as "PC (some checks weak or not run)".
+
+## 2026-11-27 (night) — v3 multi-sector detection threshold simulation started
+- sims/multisector_threshold_sim.py (committed before running): 2 and 4 sectors × white / white +
+  red noise; 1,000 noise-only stars + 250 faint planets per configuration (fixed seeds). Measures
+  the SNR the prototype multi-sector search returns on noise (false-alarm curve) and on faint
+  planets. Reports thresholds at FAR 5% / 1% / 0.25%; which FAR to adopt is Julien's decision.
+  (Nov 24 prototype: noise passes SNR 7.1 in 8% (2 sectors) / 18% (4 sectors), white noise only.)
+- CPU only, no downloads (disk at 7.7 GB free, below the 8 GB floor).
