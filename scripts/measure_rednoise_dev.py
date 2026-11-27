@@ -106,6 +106,7 @@ def run(out):
 
 def calibrate(out, alphas=(0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0), n=60):
     from rednoise_snr_sim import make
+    os.makedirs(out, exist_ok=True)
     res = []
     for al in alphas:
         for i in range(n):
