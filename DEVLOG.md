@@ -819,3 +819,17 @@ a week during school, listing only the decisions Julien needs to make.
   faint planets kept 18% / 44%. The v2-style SNR ignores correlated noise.
 - No threshold adopted. Decision for Julien: measure real red noise on dev data, and/or make the
   v3 SNR red-noise aware, then re-run.
+
+## 2026-11-27 — Julien's decisions: red noise, disk, branches, pushes
+- Pushed c2580e5, c656611, b4f0add, b7af99a to report-cards (approved).
+- Disk (approved): deleted 113 go/no-go pixel files (5.44 GB, dev controls only; survivors' 40
+  files, 1.95 GB, kept; light curves untouched) and ran `conda clean --all` (~0.9 GB; the rest of
+  pkgs/ is in use by environments and conda keeps it). Free: 7.7 → 14 GB.
+- PAPER_NOTES L6 (limitation): v2's detection SNR assumes white noise.
+- Red noise, step 1: scripts/rednoise_snr.py (Pont et al. 2006 / Winn et al. 2008 time-averaging
+  beta from out-of-transit bins of 0.75–1.25 × T14; SNR_red = SNR_white / beta, beta ≥ 1).
+  Validation sim sims/rednoise_snr_sim.py with pre-registered criteria V1–V3 (committed before
+  running); running on the same 5,000 stars as the threshold simulation (alpha 0.5, tau 1 h).
+- Red noise, step 2: scripts/measure_rednoise_dev.py on 251 dev stars (dev3 + dev2/v1/known; no
+  blind_v2 star, asserted), plus sim alpha calibration; level choice pre-registered (median and
+  90th-percentile beta at 2 h bins).
