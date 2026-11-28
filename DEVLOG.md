@@ -890,3 +890,13 @@ a week during school, listing only the decisions Julien needs to make.
 - Proposed (by the pre-registered rule, not adopted): FAR 1% → SNR 9.3; FAR 0.25% → SNR 10.0.
   Agrees with the 1,000-star run (9.12 / 9.22 at 1%). White-only reference: 8.47 / 8.45 at 1%.
 - Two-tier calibration held (Julien: Mac restart tonight); not started.
+
+## 2026-11-27 (after restart) — Julien: threshold adopted
+- Pushed 5574053 to report-cards (approved).
+- Decision (Julien): adopt the 0.25% false-alarm rate; v3 multi-sector detection threshold = SNR 10.0
+  (normal tier). Recorded as docs/v3_rules.md R1 (new file for adopted v3 rules; v2 rules untouched).
+- Flagged for Julien, not decided: the frozen two-tier design calibrates the normal tier at its edge
+  (alpha 0.153), which will likely give a number above 10.0; which one applies is his call after
+  the calibration.
+- Queue resumed after this commit: two-tier calibration → validation → summary, one job at a time,
+  Mac kept awake (caffeinate).
