@@ -870,3 +870,13 @@ a week during school, listing only the decisions Julien needs to make.
 - Two-tier threshold for noisy stars: design note docs/design_two_tier_threshold.md (NOT run;
   waiting for Julien). Proposes tiers by each star's beta_2h: ≤ 1.15 normal, 1.15–2.0 strict, > 2.0
   no claim (8% of dev stars; needs Julien's OK since it is a third bucket).
+
+## 2026-11-27 (evening) — two-tier design frozen
+- Julien approved the three buckets (beta_2h ≤ 1.15 normal, 1.15–2.0 strict, > 2.0 no claim) with
+  two additions: A1 conservative assignment (tier by beta + sigma_beta, sigma_beta = beta·√(1.36/M);
+  formula checked on the existing sim calibration: 5.0% predicted vs 4.2–5.7% measured); A2 tier-3
+  stars searched, signals listed separately as low-confidence, never claimed.
+- Design frozen (docs/design_two_tier_threshold.md) and rules committed in
+  sims/two_tier_threshold_sim.py before any run (calibration 44,000 stars at edge alphas
+  0.153 / 0.402; validation 28,000 on a dev-like mix; criteria T1–T3). Queued to run after the
+  large threshold run, one CPU job at a time.
