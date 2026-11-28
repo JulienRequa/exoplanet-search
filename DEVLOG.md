@@ -915,3 +915,12 @@ a week during school, listing only the decisions Julien needs to make.
   same validation stars gives normal-tier false alarms 0.33% (2 sectors) / 0.24% (4), planets kept
   89% / 97%; the edge-calibrated 11.6 gives 0.01% / 0.00%, planets kept 82% / 94%.
   Normal-tier number (10.0 vs 11.6): Julien's decision.
+
+## 2026-11-28 — blind_v3 LOCKED (before any further v3 development)
+- `python sampling.py blind3` (code 342a570): data/blind_v3.csv, 100 FP + 100 CP/KP, random_state=5,
+  snapshot data/toi_2026-11-26.csv, same cuts as before (P 0.5–10 d, depth > 2000 ppm, one TOI per star).
+- Excludes every star used so far (3,384 TICs: v1, 13 known hosts, blind_v2, dev_v2, dev_v3, the whole
+  hunt list, and any star named in results/ or private/ tables). Not inspected, not printed, not run.
+- Fingerprint: data/blind_v3.fingerprint.txt — md5 1cfefce0177c29f144b6cf3d08a256eb.
+- Unused matching stars left: 267 FP, 406 CP/KP.
+- Not pushed (Julien to approve).

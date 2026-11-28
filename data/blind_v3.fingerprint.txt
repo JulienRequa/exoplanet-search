@@ -1,0 +1,7 @@
+file: data/blind_v3.csv
+snapshot: data/toi_2026-11-26.csv
+seed: 5
+rows: 200 (100 FP, 100 CP/KP)
+md5: 1cfefce0177c29f144b6cf3d08a256eb
+sha256: 1e525cfcb0e933baa1b8fa4200d40c8d555da008d38059a3dc99cbb2ada09876
+excluded stars (used so far): 3384
