@@ -924,3 +924,13 @@ a week during school, listing only the decisions Julien needs to make.
 - Fingerprint: data/blind_v3.fingerprint.txt — md5 1cfefce0177c29f144b6cf3d08a256eb.
 - Unused matching stars left: 267 FP, 406 CP/KP.
 - Not pushed (Julien to approve).
+
+## 2026-11-28 (night) — v3 design notes; sibling-pool download started
+- docs/design_v3_vetting.md (15f143b): design notes (a) odd/even for variable stars, (b) secondary robust
+  to variability, (c) pixel check as a vetting step (0.19 px floor), (d) Gaia upgrades + explicit
+  CANNOT_RUN, (e) three-way verdict, (f) FP type labels + new-EB list. Each with physics, validation
+  simulation and pass/fail rules. Not built, not run. Decisions D1–D4 for Julien.
+- Sibling-pool download (docs/sibling_pool_definition.md, c1b3f11): 1,356 stars, CP/KP hosts first, most
+  sectors first; download only, 2-min SPOC light curves; 120 s per-file limit, 3 attempts, watchdog,
+  stop at < 20 GB free. Watchdog fix 00:12: stall now judged from the per-star status file (the log is
+  written every 25 stars, which can exceed 30 min on 40-sector stars); restart was clean (resumable).
