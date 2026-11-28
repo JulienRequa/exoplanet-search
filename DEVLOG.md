@@ -900,3 +900,18 @@ a week during school, listing only the decisions Julien needs to make.
   the calibration.
 - Queue resumed after this commit: two-tier calibration → validation → summary, one job at a time,
   Mac kept awake (caffeinate).
+
+## 2026-11-28 (00:00) — two-tier calibration + validation finished: PASS
+- Rules: 413f7bb (pushed before the run). Results: sims/two_tier_threshold_results_2026-11-27.md;
+  results/two_tier_calibration_2026-11-27.csv (44,000), results/two_tier_validation_2026-11-27.csv (28,000).
+- Calibration (edge alphas 0.153 / 0.402): tier thresholds normal 10.8 (FAR 1%) / 11.6 (0.25%); strict
+  23.0 / 25.5. sigma_beta formula matches the measured spread (5.1% vs 5.3%, 3.6% vs 3.8%).
+- Validation on a dev-like mix, tiers from each star's own measured beta: PASS (T1, T2, T3 everywhere).
+  Overall false alarms 0.00–0.10% (well under the target: conservative). Faint planets claimed 61–80%
+  vs 0–9% for one single threshold at the same false-alarm rate. Tier shares 69–71 / 21–23 / 8–9%.
+  Planets that push their own star into a stricter tier: 4.7% (2 sectors), 2.5% (4). Tier-3 pure
+  noise listed (low-confidence list): 3.7–5.0%.
+- Post-hoc, for information only (not a gate): Julien's adopted 10.0 applied to the normal tier of the
+  same validation stars gives normal-tier false alarms 0.33% (2 sectors) / 0.24% (4), planets kept
+  89% / 97%; the edge-calibrated 11.6 gives 0.01% / 0.00%, planets kept 82% / 94%.
+  Normal-tier number (10.0 vs 11.6): Julien's decision.
