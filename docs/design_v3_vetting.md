@@ -1,4 +1,4 @@
-# Design notes: v3 vetting (a)–(f) — PROPOSALS, NOT BUILT, NOT RUN (2026-11-28, for Julien's review)
+# Design notes: v3 vetting (a)–(f) — NOT BUILT, NOT RUN (2026-11-28; decisions D1–D4 taken 2026-11-28)
 
 **v3's goal: two outputs from one run.**
 - **(A)** Protect real planets and find planet candidates.
@@ -8,11 +8,10 @@ v2 stays frozen. v3 never changes paper 1's numbers.
 
 ## Shared rules for all six notes
 - **Data.**
-  - Development uses only dev data: v1 FPs, the 13 known hosts, dev_v2, dev_v3, and the
-    sibling-pool light curves for simulation backgrounds.
+  - Development uses only dev data: v1 FPs, the 13 known hosts, dev_v2, dev_v3, blind_v2 (dev data
+    since D1, 2026-11-28), and the sibling-pool light curves for simulation backgrounds.
   - blind_v3 (data/blind_v3.csv, md5 1cfefce0…, locked 3fea7cb) is run once, at the end, with the
     frozen v3.
-  - blind_v2 is not used, unless Julien decides to make it v3 development data (see decision D1).
 - **Order for each check.** Physics argument → validation simulation with new seeds and
   pass/fail rules committed before running → dev-set check → freeze.
 - **Statuses.** Every check reports exactly one of PASS / WEAK / FAIL / CANNOT_RUN, with a reason.
@@ -232,6 +231,8 @@ cost real planets: the 8 blind_v2 losses were mostly 3–5σ.
   - a key check that could not run;
   - RUWE > 1.4 with otherwise clean checks;
   - tier-3 (too-noisy) stars, whose signals are listed as low confidence, never claimed.
+  - normal-tier signals with 10.0 ≤ SNR < 11.6 (Julien, 2026-11-28; v3_rules R2): not claimed as
+    candidates, not discarded.
 
 **Validation.**
 - **Simulation:** a combined population. Planets, EBs, blended EBs and NEBs from (a)–(c), plus
@@ -309,7 +310,15 @@ PASS requires 1–5.
 
 ---
 
-## Decisions for Julien before any of this is built
+## Julien's decisions (2026-11-28)
+- D1: yes, blind_v2 becomes v3 development data (its 8 losses may be studied; never used for accuracy
+  claims). blind_v3 is the v3 blind test.
+- D2: build order: Gaia (d) first, then secondary eclipse (b) and odd/even (a), then the pixel check (c),
+  then the rest ((e), (f)).
+- D3: strong failure = ~5σ (0.1% false rate) per check.
+- D4: pixel files in batches, with Julien's OK each time.
+
+## Decisions as proposed (kept for the record)
 - **D1. blind_v2's status.**
   - Keep it untouched forever, or make it v3 dev data so its 8 planet losses can be studied?
   - The losses were mostly marginal odd/even (5) and density (2), exactly what (a), (d) and (e)

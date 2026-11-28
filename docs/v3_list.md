@@ -1,7 +1,7 @@
 # v3 list (living document; v2 is frozen — see VETTING_RULES.md)
 
 Each item needs a physics or simulation justification and is developed on dev data only
-(blind_v2 becomes v3 dev data if its losses are investigated; v3 gets a fresh blind sample).
+(blind_v2 is v3 dev data since 2026-11-28, Julien D1; the v3 blind test is blind_v3, locked 3fea7cb).
 v3 never changes paper 1's numbers.
 
 From VETTING_RULES.md v2 (frozen list):

@@ -934,3 +934,15 @@ a week during school, listing only the decisions Julien needs to make.
   sectors first; download only, 2-min SPOC light curves; 120 s per-file limit, 3 attempts, watchdog,
   stop at < 20 GB free. Watchdog fix 00:12: stall now judged from the per-star status file (the log is
   written every 25 stars, which can exceed 30 min on 40-sector stars); restart was clean (resumable).
+
+## 2026-11-28 (morning) — Julien's decisions
+- Pushed the 7 commits (380549c … e0aec49) to report-cards, incl. the blind_v3 lock 3fea7cb (committed
+  2026-11-27 23:52 PST), so its timestamp is public before further v3 development.
+- v3 thresholds (docs/v3_rules.md R2; R1's 10.0 superseded for the normal tier): normal tier SNR 11.6
+  (edge-calibrated, as the frozen design specified); strict tier 25.5 (FAR 0.25%); tier 3 listed only.
+  Design (e): normal-tier signals with SNR 10.0–11.6 → "needs follow-up" (not claimed, not discarded).
+- D1: blind_v2 is now v3 development data (its 8 losses may be studied; no accuracy claims from it).
+  The rule "never use blind_v2 for v3 dev work" ends here; blind_v3 is the v3 blind test.
+- D2: build order Gaia (d) → secondary (b) + odd/even (a) → pixel check (c) → (e), (f).
+- D3: strong failure = ~5σ (0.1% false rate) per check.  D4: pixel files in batches, OK each time.
+- Sibling download continues to its 20 GB floor. Gaia build starts tomorrow during the day.
