@@ -17,7 +17,7 @@ at least 6 sectors of 2-minute data. No analysis, no searching, nothing printed 
   listed sectors; 19,826 listed sector-files in total (upper bound on downloads; 4,557 for CP/KP hosts).
 - Download: scripts/prefetch_sibling_pool.py fetch — every 2-min SPOC light-curve file per qualifying
   star, 120 s time limit per file, 3 attempts per file, restarts by a watchdog if the log stalls 30 min;
-  stops when free disk < 20 GB. Per-star status in results/sibling_pool_prefetch_2026-11-27/status.csv;
+  stops when free disk < 10 GB (Julien lowered it from 20 GB, 2026-11-28 00:25, to download as much as possible). Per-star status in results/sibling_pool_prefetch_2026-11-27/status.csv;
   the log holds counts only.
 - This pool is a download list, not a target selection for paper 2: the sibling-search design
   (docs/design_sibling_search.md) still chooses its targets and rules before any search.

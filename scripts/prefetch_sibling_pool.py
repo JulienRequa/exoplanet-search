@@ -15,7 +15,7 @@ Pool (written before any download):
   listing: a star with fewer is recorded as "below 6" and nothing is downloaded for it.
 Download: every 2-min SPOC light-curve file of the star (one product per sector), one file at a
   time, 120 s socket time limit per file, 3 attempts per file (waits 30 s, 90 s). Already-cached
-  files are skipped by lightkurve. Stops when free disk < 20 GB (checked before each star).
+  files are skipped by lightkurve. Stops when free disk < 10 GB (checked before each star; was 20 GB, lowered by Julien 2026-11-28).
 Records per star go to results/sibling_pool_prefetch_2026-11-27/status.csv (TIC, status, number of
   2-min sectors, files ok / failed); the log has counts only.
 """
@@ -28,7 +28,7 @@ import pandas as pd
 SNAP = "data/toi_2026-11-26.csv"
 POOL = "data/sibling_pool_2026-11-27.csv"
 OUT = "results/sibling_pool_prefetch_2026-11-27"
-MIN_FREE_GB, MIN_SECTORS = 20.0, 6
+MIN_FREE_GB, MIN_SECTORS = 10.0, 6
 
 
 def free_gb():
