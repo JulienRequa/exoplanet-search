@@ -2,6 +2,8 @@
 
     python sampling.py blind    → data/blind_v2.csv  (100 FP + 100 CP/KP, random_state=2)
     python sampling.py dev      → data/dev_v2.csv    (40 FP + 20 CP/KP, random_state=3)
+    python sampling.py blind3   → data/blind_v3.csv  (100 FP + 100 CP/KP, random_state=5, snapshot
+                                  2026-11-26; excludes every star used so far; never printed)
     python sampling.py hunt     → data/hunt_v2_targets_2026-11-25.csv (all open PC TOIs in the
                                   v2 tested range; every TOI kept, even several per star)
 
@@ -58,6 +60,9 @@ def main(which):
         s = draw(toi, 100, 100, 4, exclude)
         s.to_csv("data/dev_v3.csv", index=False)
         print("dev_v3:", s["group"].value_counts().to_dict(), "| unique TICs:", s["TIC ID"].nunique())
+    elif which == "blind3":         # v3 blind sample (Julien 2026-11-27), locked before further v3 work
+        blind3()
+        return
     elif which == "hunt":           # v2 hunting list (2026-11-25): open candidates, no sampling
         for f in ("data/blind_v2.csv", "data/dev_v2.csv", "data/dev_v3.csv"):
             exclude |= set(pd.read_csv(f)["TIC ID"])
@@ -74,6 +79,60 @@ def main(which):
     used = exclude | (set(pd.read_csv("data/dev_v3.csv")["TIC ID"]) if which == "dev3" else set())
     print("unused matching stars — FP:", len(pool(toi, ["FP"], used)),
           "| CP/KP:", len(pool(toi, ["CP", "KP"], used)))
+
+
+BLIND3_SNAPSHOT = "data/toi_2026-11-26.csv"   # latest dated snapshot
+BLIND3_SEED = 5                               # new: 2 (blind_v2), 3 (dev_v2), 4 (dev_v3) used before
+
+
+def used_tics():
+    """Every star used so far, by TIC: v1, the 13 known hosts, blind_v2, dev_v2, dev_v3, the whole
+    v2 hunt list (all 2,896 TOIs were run; includes every hunt flag reviewed in detail), and any star
+    named in any results/ or private/ table (TIC columns, "TIC n" star names, or TOI numbers mapped to
+    TIC through both snapshots). Deliberately broader than needed."""
+    import glob, re
+    toi = pd.concat([pd.read_csv("data/toi_2026-11-24.csv"), pd.read_csv(BLIND3_SNAPSHOT)])
+    toi2tic = dict(zip(toi["TOI"].round(2), toi["TIC ID"]))
+    used = set(KNOWN_TICS.values())
+    files = [f for f in glob.glob("data/*.csv") if "toi_" not in f and "claret" not in f]
+    files += glob.glob("results/**/*.csv", recursive=True) + glob.glob("private/**/*.csv", recursive=True)
+    for f in files:
+        try:
+            d = pd.read_csv(f, low_memory=False)
+        except Exception:
+            continue
+        for c in d.columns:
+            cl = c.strip().lower()
+            if cl in ("tic id", "tic"):
+                used |= set(pd.to_numeric(d[c], errors="coerce").dropna().astype(int))
+            elif cl == "star":
+                m = d[c].astype(str).str.extract(r"TIC\s*(\d+)")[0].dropna()
+                used |= set(m.astype(int))
+            elif cl == "toi":
+                t = pd.to_numeric(d[c], errors="coerce").dropna().round(2)
+                used |= {int(toi2tic[x]) for x in t if x in toi2tic}
+    return used
+
+
+def blind3():
+    import hashlib, os
+    out = "data/blind_v3.csv"
+    assert not os.path.exists(out), "blind_v3 already locked; never redraw"
+    toi = pd.read_csv(BLIND3_SNAPSHOT)
+    used = used_tics()
+    s = draw(toi, 100, 100, BLIND3_SEED, used)
+    assert not (set(s["TIC ID"]) & used) and s["TIC ID"].nunique() == 200
+    s.to_csv(out, index=False)
+    raw = open(out, "rb").read()
+    fp = (f"file: {out}\nsnapshot: {BLIND3_SNAPSHOT}\nseed: {BLIND3_SEED}\nrows: {len(s)} "
+          f"({(s.group == 'FP').sum()} FP, {(s.group == 'CP/KP').sum()} CP/KP)\n"
+          f"md5: {hashlib.md5(raw).hexdigest()}\nsha256: {hashlib.sha256(raw).hexdigest()}\n"
+          f"excluded stars (used so far): {len(used)}\n")
+    open("data/blind_v3.fingerprint.txt", "w").write(fp)
+    print(fp, end="")   # counts and hashes only; the stars are never printed
+    left = used | set(s["TIC ID"])
+    print("unused matching stars after blind_v3 — FP:", len(pool(toi, ["FP"], left)),
+          "| CP/KP:", len(pool(toi, ["CP", "KP"], left)))
 
 
 if __name__ == "__main__":
