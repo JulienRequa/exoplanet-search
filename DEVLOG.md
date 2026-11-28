@@ -880,3 +880,13 @@ a week during school, listing only the decisions Julien needs to make.
   sims/two_tier_threshold_sim.py before any run (calibration 44,000 stars at edge alphas
   0.153 / 0.402; validation 28,000 on a dev-like mix; criteria T1–T3). Queued to run after the
   large threshold run, one CPU job at a time.
+
+## 2026-11-27 (night) — large noise-only threshold run finished
+- sims/large_noise_threshold_sim.py, 44,000 stars, 0 failed searches (4.0 h, 6 workers);
+  results/large_noise_threshold_2026-11-27.csv, summary sims/large_noise_threshold_results_2026-11-27.md.
+- Typical level (alpha 0.091), 2 / 4 sectors: FAR 1% at SNR 9.22 / 9.27 (faint planets kept
+  90.8% / 98.3%); FAR 0.25% at 9.96 / 9.95 (87.3% / 97.3%; bootstrap 95% 9.70–10.17 / 9.74–10.19;
+  25 noise stars above each). The pre-registered "enough false alarms" test for 0.25%: YES.
+- Proposed (by the pre-registered rule, not adopted): FAR 1% → SNR 9.3; FAR 0.25% → SNR 10.0.
+  Agrees with the 1,000-star run (9.12 / 9.22 at 1%). White-only reference: 8.47 / 8.45 at 1%.
+- Two-tier calibration held (Julien: Mac restart tonight); not started.
